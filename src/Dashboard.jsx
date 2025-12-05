@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Store, LogOut } from "lucide-react";
+import { FaUserCheck, FaClock } from "react-icons/fa";
 import logoImg from "./assets/logo.png";
+import sidebarLogo from "./assets/sidebarlogo.png";
 import VerifiedVendors from "./pages/VerifiedVendors";
 import PendingVendors from "./pages/PendingVendors";
 import "./Dashboard.css";
@@ -11,19 +13,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const isVendorPage = location.pathname.includes("/vendor");
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(isVendorPage);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     setVendorDropdownOpen(isVendorPage);
   }, [isVendorPage]);
 
   useEffect(() => {
-    if (sidebarCollapsed) {
+    if (!isOpen) {
       setVendorDropdownOpen(false);
     } else {
       setVendorDropdownOpen(isVendorPage);
     }
-  }, [sidebarCollapsed, isVendorPage]);
+  }, [isOpen, isVendorPage]);
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
@@ -59,57 +61,61 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <aside className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
+      <aside className={`sidebar ${!isOpen ? "collapsed" : ""}`}>
         <div className="sidebar-header">
-          {!sidebarCollapsed && (
-            <img src={logoImg} alt="Bookitall logo" className="sidebar-logo" />
-          )}
+          <img
+            src={isOpen ? logoImg : sidebarLogo}
+            alt="Bookitall logo"
+            className={`sidebar-logo ${isOpen ? "sidebar-logo-open" : "sidebar-logo-closed"}`}
+          />
           <button
             className="sidebar-toggle"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onClick={() => setIsOpen((prev) => !prev)}
             aria-label="Toggle sidebar"
           >
-            {sidebarCollapsed ? "▶" : "◀"}
+            {isOpen ? "◀" : "▶"}
           </button>
         </div>
         <nav className="sidebar-nav">
           <button
             className={`sidebar-item ${location.pathname === "/dashboard" ? "active" : ""}`}
             onClick={() => navigate("/dashboard")}
-            title={sidebarCollapsed ? "Dashboard" : ""}
+            title={!isOpen ? "Dashboard" : ""}
           >
             <LayoutDashboard className="sidebar-icon" size={20} />
-            {!sidebarCollapsed && <span>Dashboard</span>}
+            {isOpen && <span>Dashboard</span>}
           </button>
           <div className="sidebar-dropdown">
             <button
               className={`sidebar-item sidebar-item-dropdown ${isVendorPage ? "active" : ""}`}
-              onClick={() => !sidebarCollapsed && setVendorDropdownOpen(!vendorDropdownOpen)}
-              title={sidebarCollapsed ? "Vendor" : ""}
+              onClick={() => setVendorDropdownOpen(!vendorDropdownOpen)}
+              title={!isOpen ? "Vendor" : ""}
             >
               <Store className="sidebar-icon" size={20} />
-              {!sidebarCollapsed && (
+              {isOpen && (
                 <>
-                  <span>Vendor</span>
+                  <span className="sidebar-item-label">Vendor</span>
                   <span className="dropdown-arrow">
                     {vendorDropdownOpen ? "▼" : "▶"}
                   </span>
                 </>
               )}
             </button>
-            {vendorDropdownOpen && !sidebarCollapsed && (
-              <div className="dropdown-menu">
+            {vendorDropdownOpen && (
+              <div className={`dropdown-menu ${!isOpen ? "dropdown-menu-collapsed" : ""}`}>
                 <button
                   className={`dropdown-item ${location.pathname.includes("/onboarding") ? "active" : ""}`}
                   onClick={() => navigate("/dashboard/vendor/onboarding")}
                 >
-                  Verified Vendors
+                  <FaUserCheck size={14} className="dropdown-icon" />
+                  <span>Verified Vendors</span>
                 </button>
                 <button
                   className={`dropdown-item ${location.pathname.includes("/pending") ? "active" : ""}`}
                   onClick={() => navigate("/dashboard/vendor/pending")}
                 >
-                  Pending
+                  <FaClock size={14} className="dropdown-icon" />
+                  <span>Pending</span>
                 </button>
               </div>
             )}
@@ -119,10 +125,10 @@ const Dashboard = () => {
           <button
             className="logout-btn"
             onClick={handleLogout}
-            title={sidebarCollapsed ? "Logout" : ""}
+            title={!isOpen ? "Logout" : ""}
           >
             <LogOut className="logout-icon" size={18} />
-            {!sidebarCollapsed && <span>Logout</span>}
+            {isOpen && <span>Logout</span>}
           </button>
         </div>
       </aside>
