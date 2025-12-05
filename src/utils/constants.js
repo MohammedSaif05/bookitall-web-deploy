@@ -5,6 +5,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   VENDOR_ONBOARDING: '/dashboard/vendor/onboarding',
   VENDOR_PENDING: '/dashboard/vendor/pending',
+  VENDOR_DETAILS: (id) => `/dashboard/vendor/details/${id}`,
 };
 
 export const VENDOR_STATUS = {

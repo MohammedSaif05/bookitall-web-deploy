@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './login';
 import Dashboard from './Dashboard';
+import VendorDetails from './pages/VendorDetails';
 import PrivateRoute from './routes/PrivateRoute';
 import { ROUTES } from './utils/constants';
 
@@ -28,6 +29,14 @@ function App() {
         />
         <Route
           path={ROUTES.VENDOR_PENDING}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/vendor/details/:id"
           element={
             <PrivateRoute>
               <Dashboard />

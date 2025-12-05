@@ -1,0 +1,39 @@
+/* Custom Toast Styles */
+.Toastify__toast-container {
+  z-index: 9999;
+}
+
+.Toastify__toast--success {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.Toastify__toast--error {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.Toastify__toast--info {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.Toastify__toast--warning {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+
+.Toastify__progress-bar {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Make toast icons white */
+.Toastify__toast-icon {
+  color: #ffffff !important;
+}
+
+.Toastify__toast svg {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+

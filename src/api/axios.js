@@ -3,7 +3,7 @@ import { STORAGE_KEYS } from '../utils/constants';
 
 // Create axios instance with default config
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://bookitall-user-service.onrender.com',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

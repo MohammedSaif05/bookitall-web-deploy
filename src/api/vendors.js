@@ -1,10 +1,7 @@
-// import apiClient from './axios';
-// import { API_ENDPOINTS } from '../utils/constants';
+import apiClient from './axios';
 
 /**
  * Vendor API Service
- * Note: Currently returns mock data. Replace with actual API calls when backend is ready.
- * Uncomment imports above when ready to use real API.
  */
 
 // Mock data - Remove when API is ready
@@ -123,39 +120,72 @@ export const getAllVendors = async () => {
 };
 
 /**
- * Get pending vendors
- * @param {Object} params - Query parameters (unused in mock, will be used in real API)
+ * Get pending vendors list (lightweight - only essential fields)
+ * @returns {Promise} Pending vendors list response
  */
 export const getPendingVendors = async () => {
-  // TODO: Replace with actual API call
-  // export const getPendingVendors = async (params = {}) => {
-  //   return apiClient.get(API_ENDPOINTS.VENDORS.PENDING, { params });
-  // }
+  const response = await apiClient.get('/api/vendors/pending-list');
   
-  // Mock implementation
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ data: mockPendingVendors });
-    }, 500);
-  });
+  // Transform API response to match table structure
+  if (response.data.success && Array.isArray(response.data.data)) {
+    const transformedData = response.data.data.map((vendor, index) => ({
+      id: vendor.userId, // Use userId as the identifier
+      userId: vendor.userId,
+      serialNo: index + 1,
+      businessName: vendor.businessName || 'N/A',
+      businessType: vendor.businessType || 'N/A',
+      businessCategory: vendor.businessCategory || 'N/A',
+      location: vendor.location || vendor.city || 'N/A',
+      mobileNumber: vendor.mobileNumber || vendor.mobileNo || 'N/A',
+      status: 'Pending',
+    }));
+    
+    return { data: transformedData };
+  }
+  
+  return { data: [] };
 };
 
 /**
- * Get verified vendors
- * @param {Object} params - Query parameters (unused in mock, will be used in real API)
+ * Get verified vendors list (lightweight - only essential fields)
+ * @returns {Promise} Verified vendors list response
  */
 export const getVerifiedVendors = async () => {
-  // TODO: Replace with actual API call
-  // export const getVerifiedVendors = async (params = {}) => {
-  //   return apiClient.get(API_ENDPOINTS.VENDORS.VERIFIED, { params });
-  // }
+  const response = await apiClient.get('/api/vendors/verified-vendors-list');
   
-  // Mock implementation
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ data: mockVerifiedVendors });
-    }, 500);
-  });
+  // Transform API response to match table structure
+  if (response.data.success && Array.isArray(response.data.data)) {
+    const transformedData = response.data.data.map((vendor, index) => ({
+      id: vendor.userId, // Use userId as the identifier
+      userId: vendor.userId,
+      serialNo: index + 1,
+      businessName: vendor.businessName || 'N/A',
+      businessType: vendor.businessType || 'N/A',
+      businessCategory: vendor.businessCategory || 'N/A',
+      location: vendor.location || vendor.city || 'N/A',
+      mobileNumber: vendor.mobileNumber || vendor.mobileNo || 'N/A',
+      status: 'Verified',
+    }));
+    
+    return { data: transformedData };
+  }
+  
+  return { data: [] };
+};
+
+/**
+ * Get vendor details by userId
+ * @param {string} userId - Vendor userId
+ * @returns {Promise} Vendor details response
+ */
+export const getVendorDetailsByUserId = async (userId) => {
+  const response = await apiClient.get(`/api/vendors/${userId}`);
+  
+  if (response.data.success && response.data.data) {
+    return { data: response.data.data };
+  }
+  
+  throw new Error('Vendor details not found');
 };
 
 /**

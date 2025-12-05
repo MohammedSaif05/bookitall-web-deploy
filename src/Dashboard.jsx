@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { LayoutDashboard, Store, LogOut } from 'lucide-react';
 import { FaUserCheck, FaClock, FaChevronDown, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import logoImg from './assets/logo.png';
 import sidebarLogo from './assets/sidebarlogo.png';
 import VerifiedVendors from './pages/VerifiedVendors';
 import PendingVendors from './pages/PendingVendors';
+import VendorDetails from './pages/VendorDetails';
 import { useAuth } from './contexts/AuthContext';
 import { ROUTES } from './utils/constants';
 import { getPageTitle, isVendorPage } from './utils/helpers';
@@ -32,8 +34,16 @@ const Dashboard = () => {
   }, [isOpen, vendorPage]);
 
   const handleLogout = () => {
+    // Show success toast
+    toast.success('Logged out successfully!');
+    
+    // Clear auth state
     logout();
-    navigate(ROUTES.LOGIN);
+    
+    // Navigate to login page after a short delay
+    setTimeout(() => {
+      navigate(ROUTES.LOGIN);
+    }, 500);
   };
 
   const getPageContent = () => {
@@ -59,7 +69,7 @@ const Dashboard = () => {
   const pageTitle = getPageTitle(location.pathname);
 
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${!isOpen ? "sidebar-collapsed" : ""}`}>
       <aside className={`sidebar ${!isOpen ? "collapsed" : ""}`}>
         <div className="sidebar-header">
           <img
@@ -144,7 +154,9 @@ const Dashboard = () => {
           <h1>{pageTitle}</h1>
         </header>
         <div className="dashboard-content">
-          {location.pathname.includes('/onboarding') ? (
+          {location.pathname.includes('/vendor/details/') ? (
+            <VendorDetails />
+          ) : location.pathname.includes('/onboarding') ? (
             <VerifiedVendors />
           ) : location.pathname.includes('/pending') ? (
             <PendingVendors />
