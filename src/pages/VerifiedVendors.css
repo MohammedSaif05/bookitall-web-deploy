@@ -52,3 +52,17 @@
   color: #dc2626;
 }
 
+.error-message {
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.error-message p {
+  color: #dc2626;
+  font-size: 14px;
+  margin: 0;
+}
+

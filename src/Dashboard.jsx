@@ -1,63 +1,62 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, Store, LogOut } from "lucide-react";
-import { FaUserCheck, FaClock } from "react-icons/fa";
-import logoImg from "./assets/logo.png";
-import sidebarLogo from "./assets/sidebarlogo.png";
-import VerifiedVendors from "./pages/VerifiedVendors";
-import PendingVendors from "./pages/PendingVendors";
-import "./Dashboard.css";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Store, LogOut } from 'lucide-react';
+import { FaUserCheck, FaClock, FaChevronDown, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
+import logoImg from './assets/logo.png';
+import sidebarLogo from './assets/sidebarlogo.png';
+import VerifiedVendors from './pages/VerifiedVendors';
+import PendingVendors from './pages/PendingVendors';
+import { useAuth } from './contexts/AuthContext';
+import { ROUTES } from './utils/constants';
+import { getPageTitle, isVendorPage } from './utils/helpers';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isVendorPage = location.pathname.includes("/vendor");
-  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(isVendorPage);
+  const { logout } = useAuth();
+  const vendorPage = isVendorPage(location.pathname);
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(vendorPage);
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
-    setVendorDropdownOpen(isVendorPage);
-  }, [isVendorPage]);
+    setVendorDropdownOpen(vendorPage);
+  }, [vendorPage]);
 
   useEffect(() => {
     if (!isOpen) {
       setVendorDropdownOpen(false);
     } else {
-      setVendorDropdownOpen(isVendorPage);
+      setVendorDropdownOpen(vendorPage);
     }
-  }, [isOpen, isVendorPage]);
+  }, [isOpen, vendorPage]);
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    navigate("/");
-  };
-
-  const getPageTitle = () => {
-    if (location.pathname.includes("/onboarding")) return "Verified Vendors";
-    if (location.pathname.includes("/pending")) return "Vendor Pending";
-    return "Dashboard";
+    logout();
+    navigate(ROUTES.LOGIN);
   };
 
   const getPageContent = () => {
-    if (location.pathname.includes("/onboarding")) {
+    if (location.pathname.includes('/onboarding')) {
       return {
-        title: "Verified Vendors",
-        description: "Manage verified vendors here.",
+        title: 'Verified Vendors',
+        description: 'Manage verified vendors here.',
       };
     }
-    if (location.pathname.includes("/pending")) {
+    if (location.pathname.includes('/pending')) {
       return {
-        title: "Vendor Pending",
-        description: "View and manage pending vendor requests.",
+        title: 'Vendor Pending',
+        description: 'View and manage pending vendor requests.',
       };
     }
     return {
-      title: "Welcome to Dashboard",
-      description: "This is your main dashboard page.",
+      title: 'Welcome to Dashboard',
+      description: 'This is your main dashboard page.',
     };
   };
 
   const content = getPageContent();
+  const pageTitle = getPageTitle(location.pathname);
 
   return (
     <div className="dashboard-container">
@@ -73,46 +72,54 @@ const Dashboard = () => {
             onClick={() => setIsOpen((prev) => !prev)}
             aria-label="Toggle sidebar"
           >
-            {isOpen ? "◀" : "▶"}
+            {isOpen ? (
+              <FaChevronLeft size={14} />
+            ) : (
+              <FaChevronRight size={14} />
+            )}
           </button>
         </div>
         <nav className="sidebar-nav">
           <button
-            className={`sidebar-item ${location.pathname === "/dashboard" ? "active" : ""}`}
-            onClick={() => navigate("/dashboard")}
-            title={!isOpen ? "Dashboard" : ""}
+            className={`sidebar-item ${location.pathname === ROUTES.DASHBOARD ? 'active' : ''}`}
+            onClick={() => navigate(ROUTES.DASHBOARD)}
+            title={!isOpen ? 'Dashboard' : ''}
           >
             <LayoutDashboard className="sidebar-icon" size={20} />
             {isOpen && <span>Dashboard</span>}
           </button>
           <div className="sidebar-dropdown">
             <button
-              className={`sidebar-item sidebar-item-dropdown ${isVendorPage ? "active" : ""}`}
+              className={`sidebar-item sidebar-item-dropdown ${vendorPage ? 'active' : ''}`}
               onClick={() => setVendorDropdownOpen(!vendorDropdownOpen)}
-              title={!isOpen ? "Vendor" : ""}
+              title={!isOpen ? 'Vendor' : ''}
             >
               <Store className="sidebar-icon" size={20} />
               {isOpen && (
-                <>
-                  <span className="sidebar-item-label">Vendor</span>
+                <span className="sidebar-item-label">
+                  <span>Vendor</span>
                   <span className="dropdown-arrow">
-                    {vendorDropdownOpen ? "▼" : "▶"}
+                    {vendorDropdownOpen ? (
+                      <FaChevronDown size={12} />
+                    ) : (
+                      <FaChevronRight size={12} />
+                    )}
                   </span>
-                </>
+                </span>
               )}
             </button>
             {vendorDropdownOpen && (
-              <div className={`dropdown-menu ${!isOpen ? "dropdown-menu-collapsed" : ""}`}>
+              <div className={`dropdown-menu ${!isOpen ? 'dropdown-menu-collapsed' : ''}`}>
                 <button
-                  className={`dropdown-item ${location.pathname.includes("/onboarding") ? "active" : ""}`}
-                  onClick={() => navigate("/dashboard/vendor/onboarding")}
+                  className={`dropdown-item ${location.pathname.includes('/onboarding') ? 'active' : ''}`}
+                  onClick={() => navigate(ROUTES.VENDOR_ONBOARDING)}
                 >
                   <FaUserCheck size={14} className="dropdown-icon" />
                   <span>Verified Vendors</span>
                 </button>
                 <button
-                  className={`dropdown-item ${location.pathname.includes("/pending") ? "active" : ""}`}
-                  onClick={() => navigate("/dashboard/vendor/pending")}
+                  className={`dropdown-item ${location.pathname.includes('/pending') ? 'active' : ''}`}
+                  onClick={() => navigate(ROUTES.VENDOR_PENDING)}
                 >
                   <FaClock size={14} className="dropdown-icon" />
                   <span>Pending</span>
@@ -134,12 +141,12 @@ const Dashboard = () => {
       </aside>
       <main className="dashboard-main">
         <header className="dashboard-header">
-          <h1>{getPageTitle()}</h1>
+          <h1>{pageTitle}</h1>
         </header>
         <div className="dashboard-content">
-          {location.pathname.includes("/onboarding") ? (
+          {location.pathname.includes('/onboarding') ? (
             <VerifiedVendors />
-          ) : location.pathname.includes("/pending") ? (
+          ) : location.pathname.includes('/pending') ? (
             <PendingVendors />
           ) : (
             <div className="dashboard-card">

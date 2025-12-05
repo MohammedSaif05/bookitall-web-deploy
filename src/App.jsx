@@ -1,20 +1,17 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./login";
-import Dashboard from "./Dashboard";
-
-function PrivateRoute({ children }) {
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  return isLoggedIn ? children : <Navigate to="/" replace />;
-}
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './login';
+import Dashboard from './Dashboard';
+import PrivateRoute from './routes/PrivateRoute';
+import { ROUTES } from './utils/constants';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route
-          path="/dashboard"
+          path={ROUTES.DASHBOARD}
           element={
             <PrivateRoute>
               <Dashboard />
@@ -22,7 +19,7 @@ function App() {
           }
         />
         <Route
-          path="/dashboard/vendor/onboarding"
+          path={ROUTES.VENDOR_ONBOARDING}
           element={
             <PrivateRoute>
               <Dashboard />
@@ -30,7 +27,7 @@ function App() {
           }
         />
         <Route
-          path="/dashboard/vendor/pending"
+          path={ROUTES.VENDOR_PENDING}
           element={
             <PrivateRoute>
               <Dashboard />

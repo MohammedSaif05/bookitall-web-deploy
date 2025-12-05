@@ -1,24 +1,25 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./App.css";
-import logoImg from "./assets/logo.png"; // TEMP: replace with your real logo path
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import { ROUTES } from './utils/constants';
+import './App.css';
+import logoImg from './assets/logo.png';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Default login credentials
-    const defaultEmail = "admin@bookitall.com";
-    const defaultPassword = "admin";
-    
-    // Accept default credentials or any credentials for development
+    // Accept any credentials for development
+    // TODO: Replace with actual API call when backend is ready
+    // Default credentials: admin@bookitall.com / admin
     if (email && password) {
-      // Store login state (simple approach)
-      localStorage.setItem("isLoggedIn", "true");
-      navigate("/dashboard");
+      // Store login state using AuthContext
+      login({ email }, null);
+      navigate(ROUTES.DASHBOARD);
     }
   };
 

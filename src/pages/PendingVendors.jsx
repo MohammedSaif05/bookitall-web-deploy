@@ -1,104 +1,60 @@
-import React from "react";
-import Table from "../components/Table";
-import "./PendingVendors.css";
+import React from 'react';
+import Table from '../components/Table';
+import Loading from '../components/common/Loading';
+import { SkeletonTable } from '../components/common/Skeleton';
+import { useApi } from '../hooks/useApi';
+import { getPendingVendors } from '../api/vendors';
+import { VENDOR_STATUS } from '../utils/constants';
+import './PendingVendors.css';
 
 const PendingVendors = () => {
-  // Sample data - replace with actual data from API
-  const vendorsData = [
-    {
-      id: 1,
-      serialNo: 1,
-      businessName: "New Restaurant",
-      businessType: "Restaurant",
-      businessCategory: "Food & Beverage",
-      location: "Boston, MA",
-      mobileNumber: "+1 234-567-8906",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      serialNo: 2,
-      businessName: "Grand Hotel",
-      businessType: "Hotel",
-      businessCategory: "Hospitality",
-      location: "Seattle, WA",
-      mobileNumber: "+1 234-567-8907",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      serialNo: 3,
-      businessName: "Ocean Tours",
-      businessType: "Travel Agency",
-      businessCategory: "Travel & Tourism",
-      location: "San Diego, CA",
-      mobileNumber: "+1 234-567-8908",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      serialNo: 4,
-      businessName: "Party Planners",
-      businessType: "Event Management",
-      businessCategory: "Events",
-      location: "Austin, TX",
-      mobileNumber: "+1 234-567-8909",
-      status: "Pending",
-    },
-    {
-      id: 5,
-      serialNo: 5,
-      businessName: "Mountain Adventures",
-      businessType: "Sports",
-      businessCategory: "Recreation",
-      location: "Portland, OR",
-      mobileNumber: "+1 234-567-8910",
-      status: "Pending",
-    },
-  ];
+  const { data: vendorsData, loading, error } = useApi(getPendingVendors);
 
+  // eslint-disable-next-line no-unused-vars
   const handleView = (row) => {
-    console.log("View:", row);
-    // Add view logic here
+    // TODO: Implement view modal or navigation to detail page
+    // For now, this is a placeholder
+    // You can add a modal or navigate to detail page here
+    // row parameter will be used when implementing the view functionality
   };
 
   const columns = [
     {
-      key: "serialNo",
-      header: "Serial No",
-      className: "text-center",
+      key: 'serialNo',
+      header: 'Serial No',
+      className: 'text-center',
     },
     {
-      key: "businessName",
-      header: "Business Name",
+      key: 'businessName',
+      header: 'Business Name',
     },
     {
-      key: "businessType",
-      header: "Business Type",
+      key: 'businessType',
+      header: 'Business Type',
     },
     {
-      key: "businessCategory",
-      header: "Business Category",
+      key: 'businessCategory',
+      header: 'Business Category',
     },
     {
-      key: "location",
-      header: "Location",
+      key: 'location',
+      header: 'Location',
     },
     {
-      key: "mobileNumber",
-      header: "Mobile Number",
+      key: 'mobileNumber',
+      header: 'Mobile Number',
     },
     {
-      key: "status",
-      header: "Status",
+      key: 'status',
+      header: 'Status',
       render: (value) => (
         <span className="status-badge status-pending">{value}</span>
       ),
     },
     {
-      key: "action",
-      header: "Action",
-      className: "text-center",
+      key: 'action',
+      header: 'Action',
+      className: 'text-center',
       render: (value, row) => (
         <div className="action-buttons">
           <button
@@ -112,6 +68,34 @@ const PendingVendors = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="pending-vendors-page">
+        <div className="page-header">
+          <h2>Pending Vendors</h2>
+          <p>Review and manage pending vendor requests</p>
+        </div>
+        <div className="table-wrapper">
+          <SkeletonTable rows={5} columns={8} />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pending-vendors-page">
+        <div className="page-header">
+          <h2>Pending Vendors</h2>
+          <p>Review and manage pending vendor requests</p>
+        </div>
+        <div className="error-message">
+          <p>Error loading vendors: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pending-vendors-page">
       <div className="page-header">
@@ -119,7 +103,7 @@ const PendingVendors = () => {
         <p>Review and manage pending vendor requests</p>
       </div>
       <div className="table-wrapper">
-        <Table columns={columns} data={vendorsData} keyField="id" />
+        <Table columns={columns} data={vendorsData || []} keyField="id" />
       </div>
     </div>
   );
