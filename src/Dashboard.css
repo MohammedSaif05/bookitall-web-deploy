@@ -23,14 +23,18 @@
 }
 
 .sidebar.collapsed {
-  width: 80px;
+  width: 100px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
+}
+
+.sidebar.collapsed .sidebar-nav {
+  overflow: visible;
 }
 
 /* When sidebar is collapsed, adjust main content margin */
 .dashboard-container.sidebar-collapsed .dashboard-main {
-  margin-left: 80px;
+  margin-left: 100px;
 }
 
 .sidebar-header {
@@ -43,9 +47,11 @@
 }
 
 .sidebar.collapsed .sidebar-header {
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 16px 12px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0;
+  padding: 16px 6px;
+  position: relative;
 }
 
 .sidebar-logo {
@@ -53,6 +59,8 @@
   display: block;
   object-fit: contain;
   transition: transform 0.2s ease, opacity 0.2s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar-logo-open {
@@ -62,12 +70,16 @@
 }
 
 .sidebar-logo-closed {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   background: linear-gradient(180deg, #f3e8ff 0%, #f9f7ff 100%);
   padding: 8px;
   box-shadow: 0 8px 20px rgba(15, 118, 110, 0.08);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  margin-right: auto;
 }
 
 .sidebar-toggle {
@@ -86,10 +98,14 @@
   cursor: pointer;
   color: #6b7280;
   transition: background-color 0.15s ease, color 0.15s ease;
+  z-index: 1000;
 }
 
 .sidebar-toggle svg {
   flex-shrink: 0;
+  position: relative;
+  z-index: 1001;
+  pointer-events: none;
 }
 
 .sidebar-toggle:hover {
@@ -97,11 +113,24 @@
 }
 
 .sidebar.collapsed .sidebar-toggle {
-  position: static;
-  transform: none;
+  position: relative;
   right: auto;
   top: auto;
-  margin-left: 6px;
+  transform: none;
+  margin-left: auto;
+  z-index: 9999;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+}
+
+.sidebar.collapsed .sidebar-toggle svg {
+  z-index: 10000;
+  pointer-events: none;
+  position: relative;
 }
 
 .sidebar-nav {
@@ -111,6 +140,12 @@
 }
 
 .sidebar-dropdown {
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar.collapsed .sidebar-dropdown {
+  overflow: visible;
   position: relative;
 }
 
@@ -205,16 +240,16 @@
 }
 
 .dropdown-menu-collapsed {
-  position: absolute;
-  left: 72px;
-  top: 0;
-  min-width: 220px;
-  margin-top: 0;
+  position: fixed;
+  left: 108px;
+  width: 220px;
+  max-width: 220px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 8px 20px rgba(17, 24, 39, 0.12);
   border-radius: 10px;
-  z-index: 30;
+  z-index: 10000;
+  padding: 8px 0;
 }
 
 .dropdown-item {

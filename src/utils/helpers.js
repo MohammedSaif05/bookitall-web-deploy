@@ -46,8 +46,9 @@ export const debounce = (func, wait) => {
  * Get page title based on pathname
  */
 export const getPageTitle = (pathname) => {
-  if (pathname.includes('/onboarding')) return 'Verified Vendors';
-  if (pathname.includes('/pending')) return 'Vendor Pending';
+  if (pathname.includes('/onboarding')) return 'Vendor Management';
+  if (pathname.includes('/pending')) return 'Vendor Management';
+  if (pathname.includes('/vendor/details/')) return 'Vendor Details';
   return 'Dashboard';
 };
 

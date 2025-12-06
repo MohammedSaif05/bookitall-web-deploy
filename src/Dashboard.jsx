@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { LayoutDashboard, Store, LogOut } from 'lucide-react';
@@ -20,6 +20,9 @@ const Dashboard = () => {
   const vendorPage = isVendorPage(location.pathname);
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(vendorPage);
   const [isOpen, setIsOpen] = useState(true);
+  const vendorButtonRef = useRef(null);
+  const dropdownMenuRef = useRef(null);
+  const [dropdownTop, setDropdownTop] = useState(0);
 
   useEffect(() => {
     setVendorDropdownOpen(vendorPage);
@@ -32,6 +35,36 @@ const Dashboard = () => {
       setVendorDropdownOpen(vendorPage);
     }
   }, [isOpen, vendorPage]);
+
+  useEffect(() => {
+    if (vendorButtonRef.current && !isOpen && vendorDropdownOpen) {
+      const rect = vendorButtonRef.current.getBoundingClientRect();
+      setDropdownTop(rect.top);
+    }
+  }, [vendorDropdownOpen, isOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        vendorDropdownOpen &&
+        vendorButtonRef.current &&
+        dropdownMenuRef.current &&
+        !vendorButtonRef.current.contains(event.target) &&
+        !dropdownMenuRef.current.contains(event.target)
+      ) {
+        setVendorDropdownOpen(false);
+      }
+    };
+
+    if (vendorDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [vendorDropdownOpen]);
 
   const handleLogout = () => {
     // Show success toast
@@ -100,6 +133,7 @@ const Dashboard = () => {
           </button>
           <div className="sidebar-dropdown">
             <button
+              ref={vendorButtonRef}
               className={`sidebar-item sidebar-item-dropdown ${vendorPage ? 'active' : ''}`}
               onClick={() => setVendorDropdownOpen(!vendorDropdownOpen)}
               title={!isOpen ? 'Vendor' : ''}
@@ -119,17 +153,27 @@ const Dashboard = () => {
               )}
             </button>
             {vendorDropdownOpen && (
-              <div className={`dropdown-menu ${!isOpen ? 'dropdown-menu-collapsed' : ''}`}>
+              <div 
+                ref={dropdownMenuRef}
+                className={`dropdown-menu ${!isOpen ? 'dropdown-menu-collapsed' : ''}`}
+                style={!isOpen ? { top: `${dropdownTop}px` } : {}}
+              >
                 <button
                   className={`dropdown-item ${location.pathname.includes('/onboarding') ? 'active' : ''}`}
-                  onClick={() => navigate(ROUTES.VENDOR_ONBOARDING)}
+                  onClick={() => {
+                    setVendorDropdownOpen(false);
+                    navigate(ROUTES.VENDOR_ONBOARDING);
+                  }}
                 >
                   <FaUserCheck size={14} className="dropdown-icon" />
                   <span>Verified Vendors</span>
                 </button>
                 <button
                   className={`dropdown-item ${location.pathname.includes('/pending') ? 'active' : ''}`}
-                  onClick={() => navigate(ROUTES.VENDOR_PENDING)}
+                  onClick={() => {
+                    setVendorDropdownOpen(false);
+                    navigate(ROUTES.VENDOR_PENDING);
+                  }}
                 >
                   <FaClock size={14} className="dropdown-icon" />
                   <span>Pending</span>
