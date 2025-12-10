@@ -1,39 +1,30 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, MapPin, Phone, Mail, User, Clock, Calendar, Image as ImageIcon, FileText } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Phone, Mail, User, Clock, Calendar, Image as ImageIcon, FileText, Scissors } from 'lucide-react';
 import { FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import Loading from '../components/common/Loading';
-import { getVendorDetailsByUserId, updateVendorStatus } from '../api/vendors';
+import { getVendorDetailsByUserId, approveVendorProduction, rejectVendorImages, rejectVendorDocument } from '../api/vendors';
+import { ROUTES } from '../utils/constants';
 import { useCachedApi } from '../hooks/useCachedApi';
 import { CACHE_KEYS } from '../utils/cache';
 import { formatPhoneNumber, formatDate } from '../utils/helpers';
 import './VendorDetails.css';
+
+const sampleShopImages = [
+  // Turf-themed sample
+  'https://images.unsplash.com/photo-1554254227-712e1b02c279?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1639070462748-42d7716ee0cd?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+];
 
 const VendorDetails = () => {
   const { id } = useParams(); // This is the userId
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
   const [approving, setApproving] = useState(false);
-  const [rejecting, setRejecting] = useState(false);
-
-  const sampleShopImages = [
-    // Turf-themed sample
-    'https://images.unsplash.com/photo-1554254227-712e1b02c279?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://images.unsplash.com/photo-1639070462748-42d7716ee0cd?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  ];
-
-  const sampleDocuments = [
-    {
-      name: 'Registration Certificate (sample)',
-      url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    },
-    {
-      name: 'GST Certificate (sample)',
-      url: 'https://www.africau.edu/images/default/sample.pdf',
-    },
-  ];
+  const [rejectingImages, setRejectingImages] = useState(false);
+  const [rejectingDocument, setRejectingDocument] = useState(false);
 
   // Create API function wrapper
   const fetchVendorDetails = React.useCallback(async () => {
@@ -50,11 +41,16 @@ const VendorDetails = () => {
   );
 
   const shopImages = useMemo(() => {
+    // Prioritize businessImages from new API response
+    if (Array.isArray(vendor?.businessImages) && vendor.businessImages.length > 0) {
+      return vendor.businessImages.slice(0, 2);
+    }
+
+    // Fallback to other possible fields
     const arrayCandidate =
       vendor?.shopImages ||
       vendor?.storeImages ||
-      vendor?.images ||
-      vendor?.businessImages;
+      vendor?.images;
 
     if (Array.isArray(arrayCandidate) && arrayCandidate.length > 0) {
       return arrayCandidate.slice(0, 2);
@@ -68,29 +64,9 @@ const VendorDetails = () => {
     return sampleShopImages;
   }, [vendor]);
 
-  const documents = useMemo(() => {
-    const docArray =
-      vendor?.documents ||
-      vendor?.uploadedDocuments ||
-      vendor?.docFiles ||
-      vendor?.files;
-
-    if (Array.isArray(docArray) && docArray.length > 0) {
-      return docArray.slice(0, 4);
-    }
-
-    const flatDocs = [
-      vendor?.businessRegistration,
-      vendor?.gstCertificate,
-      vendor?.licenseDocument,
-      vendor?.identityProof,
-    ].filter(Boolean);
-
-    if (flatDocs.length > 0) {
-      return flatDocs.slice(0, 4);
-    }
-
-    return sampleDocuments;
+  // Get business document (single PDF)
+  const businessDocument = useMemo(() => {
+    return vendor?.businessDocument || null;
   }, [vendor]);
 
   // Show error toast if API call fails
@@ -117,7 +93,7 @@ const VendorDetails = () => {
 
     const result = await Swal.fire({
       title: 'Approve vendor?',
-      text: 'This will mark the vendor as verified.',
+      text: 'This will mark the vendor as verified and move them to verified vendors.',
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Approve',
@@ -129,15 +105,16 @@ const VendorDetails = () => {
 
     try {
       setApproving(true);
-      await updateVendorStatus(id, 'Verified');
-      await refetch(true);
+      await approveVendorProduction(id);
       Swal.fire({
         icon: 'success',
         title: 'Vendor approved',
-        text: 'The vendor has been successfully approved.',
+        text: 'The vendor has been successfully approved and moved to verified vendors.',
         timer: 2200,
         showConfirmButton: false,
       });
+      // Navigate to pending vendors list after successful approval
+      navigate(ROUTES.VENDOR_PENDING);
     } catch (err) {
       toast.error(err?.message || 'Failed to approve vendor');
     } finally {
@@ -145,14 +122,14 @@ const VendorDetails = () => {
     }
   };
 
-  const handleReject = async () => {
+  const handleRejectImages = async () => {
     if (!id || vendor?.isBusinessVerified) return;
 
     const { value: reason } = await Swal.fire({
-      title: 'Reject vendor',
+      title: 'Reject Images',
       input: 'text',
       inputLabel: 'Reason for rejection',
-      inputPlaceholder: 'Enter reason',
+      inputPlaceholder: 'Enter reason for rejecting images',
       inputValidator: (value) => (!value ? 'Reason is required' : undefined),
       showCancelButton: true,
       confirmButtonText: 'Reject',
@@ -162,20 +139,54 @@ const VendorDetails = () => {
     if (!reason) return;
 
     try {
-      setRejecting(true);
-      await updateVendorStatus(id, 'Rejected');
+      setRejectingImages(true);
+      await rejectVendorImages(id, reason);
       await refetch(true);
       Swal.fire({
         icon: 'success',
-        title: 'Vendor rejected',
-        text: 'The vendor has been marked as rejected.',
+        title: 'Images rejected',
+        text: 'The images have been rejected successfully.',
         timer: 2200,
         showConfirmButton: false,
       });
     } catch (err) {
-      toast.error(err?.message || 'Failed to reject vendor');
+      toast.error(err?.message || 'Failed to reject images');
     } finally {
-      setRejecting(false);
+      setRejectingImages(false);
+    }
+  };
+
+  const handleRejectDocument = async () => {
+    if (!id || vendor?.isBusinessVerified) return;
+
+    const { value: reason } = await Swal.fire({
+      title: 'Reject Document',
+      input: 'text',
+      inputLabel: 'Reason for rejection',
+      inputPlaceholder: 'Enter reason for rejecting document',
+      inputValidator: (value) => (!value ? 'Reason is required' : undefined),
+      showCancelButton: true,
+      confirmButtonText: 'Reject',
+      confirmButtonColor: '#ef4444',
+    });
+
+    if (!reason) return;
+
+    try {
+      setRejectingDocument(true);
+      await rejectVendorDocument(id, reason);
+      await refetch(true);
+      Swal.fire({
+        icon: 'success',
+        title: 'Document rejected',
+        text: 'The document has been rejected successfully.',
+        timer: 2200,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      toast.error(err?.message || 'Failed to reject document');
+    } finally {
+      setRejectingDocument(false);
     }
   };
 
@@ -427,12 +438,50 @@ const VendorDetails = () => {
             )}
           </section>
 
+          {/* Services */}
+          {vendor.services && vendor.services.length > 0 && (
+            <section className="details-section">
+              <h2 className="section-title">
+                <Scissors size={20} />
+                Services
+              </h2>
+              <div className="services-grid">
+                {vendor.services.map((service, index) => (
+                  <div key={index} className="service-card">
+                    <div className="service-header">
+                      <h3 className="service-name">{service.serviceName || 'N/A'}</h3>
+                      <span className="service-cost">₹{service.serviceCost || '0'}</span>
+                    </div>
+                    <div className="service-details">
+                      <div className="service-detail-item">
+                        <label>Duration</label>
+                        <span>{service.serviceDuration || 'N/A'} minutes</span>
+                      </div>
+                      <div className="service-detail-item">
+                        <label>Gender</label>
+                        <span className={`gender-badge gender-${service.gender?.toLowerCase() || 'unisex'}`}>
+                          {service.gender || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Shop Images */}
           <section className="details-section">
             <h2 className="section-title">
               <ImageIcon size={20} />
               Shop Images
             </h2>
+            {vendor.isBusinessImageApproved === false && vendor.imageRejectMessage && (
+              <div className="rejection-message">
+                <span className="rejection-label">Rejection Reason:</span>
+                <span className="rejection-text">{vendor.imageRejectMessage}</span>
+              </div>
+            )}
             <div className="shop-images-grid">
               {shopImages.length > 0 ? (
                 shopImages.map((src, index) => (
@@ -457,60 +506,66 @@ const VendorDetails = () => {
               <div className="section-actions">
                 <button
                   className="reject-button"
-                  onClick={handleReject}
-                  disabled={rejecting}
+                  onClick={handleRejectImages}
+                  disabled={rejectingImages}
                 >
-                  {rejecting ? 'Rejecting…' : 'Reject'}
+                  {rejectingImages ? 'Rejecting…' : 'Reject Images'}
                 </button>
               </div>
             )}
           </section>
 
-          {/* Documents */}
+          {/* Business Document */}
           <section className="details-section">
             <h2 className="section-title">
               <FileText size={20} />
-              Uploaded Documents
+              Business Document
             </h2>
-            <div className="documents-grid">
-              {documents.length > 0 ? (
-                documents.map((doc, index) => {
-                  const href = typeof doc === 'string' ? doc : doc?.url || doc?.link;
-                  const label =
-                    doc?.name ||
-                    doc?.label ||
-                    doc?.type ||
-                    doc?.title ||
-                    `Document ${index + 1}`;
-
-                  return (
-                    <a
-                      key={index}
-                      className="document-card"
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <FileText size={32} />
-                      <div className="document-meta">
-                        <span className="document-label">{label}</span>
-                        <span className="document-link">Open</span>
-                      </div>
-                    </a>
-                  );
-                })
-              ) : (
-                <p className="empty-state">No documents uploaded.</p>
-              )}
-            </div>
+            {vendor.isBusinessDocumentApproved === false && vendor.documentRejectMessage && (
+              <div className="rejection-message">
+                <span className="rejection-label">Rejection Reason:</span>
+                <span className="rejection-text">{vendor.documentRejectMessage}</span>
+              </div>
+            )}
+            {businessDocument ? (
+              <div className="document-preview-container">
+                <div className="document-preview-header">
+                  <span className="document-title">Business Document (PDF)</span>
+                  <a
+                    href={businessDocument}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="document-open-link"
+                  >
+                    Open in New Tab
+                  </a>
+                </div>
+                <div className="pdf-preview-wrapper">
+                  <iframe
+                    src={`${businessDocument}#toolbar=0`}
+                    className="pdf-preview"
+                    title="Business Document Preview"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const errorDiv = document.createElement('div');
+                      errorDiv.className = 'pdf-error';
+                      errorDiv.textContent = 'Unable to load PDF preview. Please use the link above to view the document.';
+                      e.currentTarget.parentElement.appendChild(errorDiv);
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="empty-state">No business document uploaded.</p>
+            )}
             {!vendor.isBusinessVerified && (
               <div className="section-actions">
                 <button
                   className="reject-button"
-                  onClick={handleReject}
-                  disabled={rejecting}
+                  onClick={handleRejectDocument}
+                  disabled={rejectingDocument}
                 >
-                  {rejecting ? 'Rejecting…' : 'Reject'}
+                  {rejectingDocument ? 'Rejecting…' : 'Reject Document'}
                 </button>
               </div>
             )}
@@ -535,10 +590,28 @@ const VendorDetails = () => {
                 <label>Business Verified</label>
                 <p>{vendor.isBusinessVerified ? 'Yes' : 'No'}</p>
               </div>
+              {vendor.isBusinessDocumentApproved !== null && (
+                <div className="info-item">
+                  <label>Document Approved</label>
+                  <p>{vendor.isBusinessDocumentApproved ? 'Yes' : 'No'}</p>
+                </div>
+              )}
+              {vendor.isBusinessImageApproved !== null && (
+                <div className="info-item">
+                  <label>Image Approved</label>
+                  <p>{vendor.isBusinessImageApproved ? 'Yes' : 'No'}</p>
+                </div>
+              )}
               <div className="info-item">
                 <label>User ID</label>
                 <p>{vendor.userId || 'N/A'}</p>
               </div>
+              {vendor.shopId && (
+                <div className="info-item">
+                  <label>Shop ID</label>
+                  <p>{vendor.shopId}</p>
+                </div>
+              )}
               {vendor.createdAt && (
                 <div className="info-item">
                   <label>Created At</label>

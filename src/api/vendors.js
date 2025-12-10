@@ -158,6 +158,7 @@ export const getVerifiedVendors = async () => {
     const transformedData = response.data.data.map((vendor, index) => ({
       id: vendor.userId, // Use userId as the identifier
       userId: vendor.userId,
+      shopId: vendor.shopId || 'N/A',
       serialNo: index + 1,
       businessName: vendor.businessName || 'N/A',
       businessType: vendor.businessType || 'N/A',
@@ -223,5 +224,48 @@ export const updateVendorStatus = async (id, status) => {
       resolve({ data: { id, status, updatedAt: new Date().toISOString() } });
     }, 500);
   });
+};
+
+/**
+ * Reject vendor images
+ * @param {string} userId - Vendor userId
+ * @param {string} reason - Rejection reason
+ * @returns {Promise} API response
+ */
+export const rejectVendorImages = async (userId, reason) => {
+  const response = await apiClient.patch(`/api/vendor/${userId}/reject-images`, {
+    userId,
+    message: reason,
+  });
+  
+  return response.data;
+};
+
+/**
+ * Reject vendor document
+ * @param {string} userId - Vendor userId
+ * @param {string} reason - Rejection reason
+ * @returns {Promise} API response
+ */
+export const rejectVendorDocument = async (userId, reason) => {
+  const response = await apiClient.patch(`/api/vendor/${userId}/reject-document`, {
+    userId,
+    message: reason,
+  });
+  
+  return response.data;
+};
+
+/**
+ * Approve vendor for production
+ * @param {string} userId - Vendor userId
+ * @returns {Promise} API response
+ */
+export const approveVendorProduction = async (userId) => {
+  const response = await apiClient.patch(`/api/vendor/${userId}/approve-vendor-production`, {
+    userId,
+  });
+  
+  return response.data;
 };
 

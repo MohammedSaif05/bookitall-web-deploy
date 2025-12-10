@@ -84,6 +84,11 @@ const VerifiedVendors = () => {
       header: 'Business Category',
     },
     {
+      key: 'shopId',
+      header: 'Shop ID',
+      className: 'text-center',
+    },
+    {
       key: 'location',
       header: 'Location',
     },
@@ -124,7 +129,7 @@ const VerifiedVendors = () => {
           <p>Manage and view all verified vendors</p>
         </div>
         <div className="table-wrapper">
-          <SkeletonTable rows={5} columns={8} />
+          <SkeletonTable rows={5} columns={9} />
         </div>
       </div>
     );
