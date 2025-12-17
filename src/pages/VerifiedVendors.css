@@ -1,9 +1,13 @@
 .verified-vendors-page {
   width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .page-header {
   margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .page-header .header-content {
@@ -11,6 +15,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
 .page-header h2 {
@@ -76,6 +83,57 @@
 
 .table-wrapper {
   width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .page-header .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .refresh-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header h2 {
+    font-size: 20px;
+  }
+
+  .page-header p {
+    font-size: 13px;
+  }
+
+  .refresh-button {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    margin-bottom: 20px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .refresh-button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .text-center {

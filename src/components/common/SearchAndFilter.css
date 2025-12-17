@@ -5,6 +5,9 @@
   margin-bottom: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .search-filter-row {
@@ -12,6 +15,8 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Search Input */
@@ -19,6 +24,8 @@
   position: relative;
   flex: 1;
   min-width: 280px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .search-icon {
@@ -41,6 +48,7 @@
   background-color: #f9fafb;
   transition: all 0.2s ease;
   font-weight: 400;
+  box-sizing: border-box;
 }
 
 .search-input:focus {
@@ -88,6 +96,9 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .filter-group {
@@ -95,6 +106,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .filter-icon {
@@ -103,7 +116,9 @@
 }
 
 .filter-select {
-  min-width: 180px;
+  min-width: 160px;
+  max-width: 100%;
+  width: 100%;
   padding: 12px 36px 12px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -117,6 +132,7 @@
   background-repeat: no-repeat;
   background-position: right 12px center;
   font-weight: 400;
+  box-sizing: border-box;
 }
 
 .filter-select:focus {
@@ -146,6 +162,8 @@
   transition: all 0.2s ease;
   white-space: nowrap;
   height: 44px;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .clear-filters-btn:hover {
@@ -163,31 +181,50 @@
   flex-shrink: 0;
 }
 
-/* Responsive */
+/* Responsive Styles */
+
+/* Large Tablets and Small Laptops (769px - 1024px) - Account for sidebar */
 @media (max-width: 1024px) {
+  .search-filter-container {
+    padding: 14px 18px;
+  }
+
   .search-filter-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 14px;
   }
 
   .search-input-wrapper {
     min-width: 100%;
+    max-width: 100%;
   }
 
   .filters-row {
     width: 100%;
     justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .filter-group {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .filter-select {
-    flex: 1;
-    min-width: 150px;
+    min-width: 140px;
+    max-width: 100%;
   }
 }
 
+/* Tablets (481px - 768px) - Account for sidebar collapsed (100px) */
 @media (max-width: 768px) {
   .search-filter-container {
     padding: 12px 16px;
+  }
+
+  .search-filter-row {
+    gap: 12px;
   }
 
   .filters-row {
@@ -198,16 +235,102 @@
 
   .filter-group {
     width: 100%;
+    flex: 1 1 100%;
   }
 
   .filter-select {
     width: 100%;
     min-width: 100%;
+    max-width: 100%;
   }
 
   .clear-filters-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* Mobile Phones (320px - 480px) */
+@media (max-width: 480px) {
+  .search-filter-container {
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+
+  .search-filter-row {
+    gap: 10px;
+  }
+
+  .search-input-wrapper {
+    min-width: 100%;
+  }
+
+  .search-input {
+    padding: 10px 14px 10px 40px;
+    font-size: 13px;
+  }
+
+  .search-icon {
+    left: 12px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .filters-row {
+    gap: 8px;
+  }
+
+  .filter-select {
+    padding: 10px 32px 10px 10px;
+    font-size: 13px;
+  }
+
+  .clear-filters-btn {
+    padding: 10px 14px;
+    font-size: 12px;
+    height: 40px;
+  }
+
+  .filter-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .search-filter-container {
+    padding: 10px 12px;
+  }
+
+  .search-input {
+    padding: 9px 12px 9px 36px;
+    font-size: 13px;
+  }
+
+  .filter-select {
+    padding: 9px 30px 9px 9px;
+    font-size: 13px;
+  }
+}
+
+/* Account for sidebar expanded state on medium screens */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .search-filter-row {
+    gap: 14px;
+  }
+
+  .search-input-wrapper {
+    min-width: 250px;
+    flex: 1 1 auto;
+  }
+
+  .filters-row {
+    flex: 0 0 auto;
+  }
+
+  .filter-select {
+    min-width: 150px;
   }
 }
 
