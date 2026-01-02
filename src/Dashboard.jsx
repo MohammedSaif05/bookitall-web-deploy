@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { LayoutDashboard, Store, LogOut } from 'lucide-react';
+import { LayoutDashboard, Store, LogOut, ShieldCheck } from 'lucide-react';
 import { FaUserCheck, FaClock, FaChevronDown, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import logoImg from './assets/logo.png';
 import sidebarLogo from './assets/sidebarlogo.png';
 import VerifiedVendors from './pages/VerifiedVendors';
 import PendingVendors from './pages/PendingVendors';
 import VendorDetails from './pages/VendorDetails';
+import Verification from './pages/Verification';
 import { useAuth } from './contexts/AuthContext';
 import { ROUTES } from './utils/constants';
 import { getPageTitle, isVendorPage } from './utils/helpers';
@@ -92,6 +93,12 @@ const Dashboard = () => {
         description: 'View and manage pending vendor requests.',
       };
     }
+    if (location.pathname.includes('/verification')) {
+      return {
+        title: 'Verification',
+        description: 'Verify IFSC codes and account numbers.',
+      };
+    }
     return {
       title: 'Welcome to Dashboard',
       description: 'This is your main dashboard page.',
@@ -130,6 +137,14 @@ const Dashboard = () => {
           >
             <LayoutDashboard className="sidebar-icon" size={20} />
             {isOpen && <span>Dashboard</span>}
+          </button>
+          <button
+            className={`sidebar-item ${location.pathname === ROUTES.VERIFICATION ? 'active' : ''}`}
+            onClick={() => navigate(ROUTES.VERIFICATION)}
+            title={!isOpen ? 'Verification' : ''}
+          >
+            <ShieldCheck className="sidebar-icon" size={20} />
+            {isOpen && <span>Verification</span>}
           </button>
           <div className="sidebar-dropdown">
             <button
@@ -204,6 +219,8 @@ const Dashboard = () => {
             <VerifiedVendors />
           ) : location.pathname.includes('/pending') ? (
             <PendingVendors />
+          ) : location.pathname.includes('/verification') ? (
+            <Verification />
           ) : (
             <div className="dashboard-card">
               <h2>{content.title}</h2>

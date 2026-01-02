@@ -43,6 +43,14 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path={ROUTES.VERIFICATION}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );
