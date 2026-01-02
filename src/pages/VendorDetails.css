@@ -449,6 +449,68 @@
   color: #6b21a8;
 }
 
+/* Bank Details */
+.bank-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bank-detail-card {
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background-color: #f9fafb;
+  transition: all 0.15s ease;
+}
+
+.bank-detail-card:hover {
+  border-color: #d1d5db;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.bank-detail-header {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.bank-detail-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.bank-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bank-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bank-detail-item label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.bank-detail-item p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  word-break: break-word;
+}
+
 /* Document Preview */
 .document-preview-container {
   width: 100%;
@@ -634,6 +696,10 @@
   .services-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
+
+  .bank-details-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }
 
 /* Account for sidebar collapsed state (additional space available) */
@@ -669,6 +735,7 @@
 .info-grid,
 .shop-images-grid,
 .services-grid,
+.bank-details-grid,
 .document-preview-container,
 .pdf-preview-wrapper {
   overflow-x: hidden;
@@ -724,6 +791,10 @@
 
   .services-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .bank-details-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 
   .pdf-preview-wrapper {
@@ -805,6 +876,11 @@
   }
 
   .services-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .bank-details-grid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
@@ -943,6 +1019,10 @@
   }
 
   .services-grid {
+    gap: 12px;
+  }
+
+  .bank-details-grid {
     gap: 12px;
   }
 

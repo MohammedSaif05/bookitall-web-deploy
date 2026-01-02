@@ -257,6 +257,21 @@ export const rejectVendorDocument = async (userId, reason) => {
 };
 
 /**
+ * Reject vendor services
+ * @param {string} userId - Vendor userId
+ * @param {string} reason - Rejection reason
+ * @returns {Promise} API response
+ */
+export const rejectVendorServices = async (userId, reason) => {
+  const response = await apiClient.patch(`/api/vendor/${userId}/reject-services`, {
+    userId,
+    message: reason,
+  });
+  
+  return response.data;
+};
+
+/**
  * Approve vendor for production
  * @param {string} userId - Vendor userId
  * @returns {Promise} API response
