@@ -31,11 +31,11 @@ const Verification = () => {
       
       const response = await verifyIfsc(ifscCode);
       
-      if (response.status && response.data) {
+      if (response.status && response.data && response.data.valid) {
         setIfscResult(response.data);
-        toast.success('IFSC code verified successfully');
+        toast.success(response.message || 'IFSC code verified successfully');
       } else {
-        throw new Error(response.message || 'IFSC code not found');
+        throw new Error(response.message || 'IFSC code not found or invalid');
       }
     } catch (error) {
       const errorMessage = error?.message || 'Failed to verify IFSC code';
@@ -129,55 +129,34 @@ const Verification = () => {
                     </div>
                     <div className="verification-result-content">
                       <div className="verification-result-row">
-                        <span className="verification-result-label">IFSC:</span>
-                        <span className="verification-result-value">{ifscResult.IFSC}</span>
+                        <span className="verification-result-label">IFSC Code:</span>
+                        <span className="verification-result-value">{ifscResult.ifsc}</span>
                       </div>
                       <div className="verification-result-row">
-                        <span className="verification-result-label">Bank:</span>
-                        <span className="verification-result-value">{ifscResult.BANK}</span>
+                        <span className="verification-result-label">Bank Name:</span>
+                        <span className="verification-result-value">{ifscResult.bank_name}</span>
                       </div>
                       <div className="verification-result-row">
-                        <span className="verification-result-label">Branch:</span>
-                        <span className="verification-result-value">{ifscResult.BRANCH}</span>
-                      </div>
-                      <div className="verification-result-row">
-                        <span className="verification-result-label">Address:</span>
-                        <span className="verification-result-value">{ifscResult.ADDRESS}</span>
+                        <span className="verification-result-label">Branch Name:</span>
+                        <span className="verification-result-value">{ifscResult.branch_name}</span>
                       </div>
                       <div className="verification-result-row">
                         <span className="verification-result-label">City:</span>
-                        <span className="verification-result-value">{ifscResult.CITY}</span>
-                      </div>
-                      <div className="verification-result-row">
-                        <span className="verification-result-label">District:</span>
-                        <span className="verification-result-value">{ifscResult.DISTRICT}</span>
+                        <span className="verification-result-value">{ifscResult.city}</span>
                       </div>
                       <div className="verification-result-row">
                         <span className="verification-result-label">State:</span>
-                        <span className="verification-result-value">{ifscResult.STATE}</span>
-                      </div>
-                      {ifscResult.CONTACT && (
-                        <div className="verification-result-row">
-                          <span className="verification-result-label">Contact:</span>
-                          <span className="verification-result-value">{ifscResult.CONTACT}</span>
-                        </div>
-                      )}
-                      <div className="verification-result-row">
-                        <span className="verification-result-label">MICR:</span>
-                        <span className="verification-result-value">{ifscResult.MICR || 'N/A'}</span>
+                        <span className="verification-result-value">{ifscResult.state}</span>
                       </div>
                       <div className="verification-result-row">
-                        <span className="verification-result-label">SWIFT:</span>
-                        <span className="verification-result-value">{ifscResult.SWIFT || 'N/A'}</span>
-                      </div>
-                      <div className="verification-result-features">
-                        <span className="verification-result-label">Services:</span>
-                        <div className="verification-features-list">
-                          {ifscResult.UPI && <span className="verification-feature-badge">UPI</span>}
-                          {ifscResult.RTGS && <span className="verification-feature-badge">RTGS</span>}
-                          {ifscResult.NEFT && <span className="verification-feature-badge">NEFT</span>}
-                          {ifscResult.IMPS && <span className="verification-feature-badge">IMPS</span>}
-                        </div>
+                        <span className="verification-result-label">Status:</span>
+                        <span className="verification-result-value">
+                          {ifscResult.valid ? (
+                            <span className="verification-valid-badge">Valid</span>
+                          ) : (
+                            <span className="verification-invalid-badge">Invalid</span>
+                          )}
+                        </span>
                       </div>
                     </div>
                   </div>

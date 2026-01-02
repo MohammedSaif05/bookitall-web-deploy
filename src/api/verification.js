@@ -24,16 +24,20 @@ export const verifyIfsc = async (ifscCode) => {
   try {
     const response = await apiClient.get(API_ENDPOINTS.VERIFICATION.VERIFY_IFSC(cleanIfsc));
     
-    // Handle response based on backend structure
+    // Handle nested response structure:
+    // { success: true, data: { success: true, message: "...", data: { ifsc, bank_name, ... } } }
     if (response.data.success && response.data.data) {
-      return {
-        status: true,
-        message: response.data.message || 'IFSC details found',
-        data: response.data.data,
-      };
-    } else if (response.data.status && response.data.data) {
-      // Direct response format from backend
-      return response.data;
+      const innerData = response.data.data;
+      
+      if (innerData.success && innerData.data) {
+        return {
+          status: true,
+          message: innerData.message || 'IFSC details found',
+          data: innerData.data, // This contains: valid, ifsc, bank_name, branch_name, city, state
+        };
+      } else {
+        throw new Error(innerData.message || 'IFSC code not found or invalid');
+      }
     } else {
       throw new Error(response.data.message || 'IFSC code not found or invalid');
     }
