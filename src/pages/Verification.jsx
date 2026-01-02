@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { CreditCard, Search } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { verifyIfsc } from '../api/verification';
 import './Verification.css';
 
 const Verification = () => {
   const [ifscCode, setIfscCode] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
-  const [verifying, setVerifying] = useState(false);
+  const [verifyingIfsc, setVerifyingIfsc] = useState(false);
+  const [verifyingAccount, setVerifyingAccount] = useState(false);
+  const [ifscResult, setIfscResult] = useState(null);
+  const [ifscError, setIfscError] = useState(null);
 
   const handleIfscVerify = async () => {
     if (!ifscCode.trim()) {
@@ -14,19 +18,31 @@ const Verification = () => {
       return;
     }
 
+    // Validate IFSC format (should be 11 characters)
+    if (ifscCode.trim().length !== 11) {
+      toast.error('IFSC code must be 11 characters');
+      return;
+    }
+
     try {
-      setVerifying(true);
-      // TODO: Implement IFSC verification API call
-      // const response = await verifyIfsc(ifscCode);
+      setVerifyingIfsc(true);
+      setIfscError(null);
+      setIfscResult(null);
       
-      // Mock implementation for now
-      setTimeout(() => {
-        toast.success(`IFSC Code ${ifscCode} verified successfully`);
-        setVerifying(false);
-      }, 1000);
+      const response = await verifyIfsc(ifscCode);
+      
+      if (response.status && response.data) {
+        setIfscResult(response.data);
+        toast.success('IFSC code verified successfully');
+      } else {
+        throw new Error(response.message || 'IFSC code not found');
+      }
     } catch (error) {
-      toast.error(error?.message || 'Failed to verify IFSC code');
-      setVerifying(false);
+      const errorMessage = error?.message || 'Failed to verify IFSC code';
+      setIfscError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setVerifyingIfsc(false);
     }
   };
 
@@ -37,18 +53,18 @@ const Verification = () => {
     }
 
     try {
-      setVerifying(true);
+      setVerifyingAccount(true);
       // TODO: Implement Account Number verification API call
       // const response = await verifyAccountNumber(accountNumber);
       
       // Mock implementation for now
       setTimeout(() => {
         toast.success(`Account Number ${accountNumber} verified successfully`);
-        setVerifying(false);
+        setVerifyingAccount(false);
       }, 1000);
     } catch (error) {
       toast.error(error?.message || 'Failed to verify account number');
-      setVerifying(false);
+      setVerifyingAccount(false);
     }
   };
 
@@ -83,22 +99,97 @@ const Verification = () => {
                     className="verification-input"
                     placeholder="Enter IFSC code (e.g., HDFC0001234)"
                     value={ifscCode}
-                    onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      setIfscCode(e.target.value.toUpperCase());
+                      setIfscResult(null);
+                      setIfscError(null);
+                    }}
                     maxLength={11}
-                    disabled={verifying}
+                    disabled={verifyingIfsc}
                   />
                   <button
                     className="verification-button"
                     onClick={handleIfscVerify}
-                    disabled={verifying || !ifscCode.trim()}
+                    disabled={verifyingIfsc || !ifscCode.trim()}
                   >
                     <Search size={16} />
-                    {verifying ? 'Verifying...' : 'Verify'}
+                    {verifyingIfsc ? 'Verifying...' : 'Verify'}
                   </button>
                 </div>
                 <p className="verification-hint">
                   Enter 11-character IFSC code to verify bank details
                 </p>
+                
+                {/* IFSC Verification Result */}
+                {ifscResult && (
+                  <div className="verification-result">
+                    <div className="verification-result-header">
+                      <CheckCircle size={18} className="verification-success-icon" />
+                      <span className="verification-result-title">Verification Successful</span>
+                    </div>
+                    <div className="verification-result-content">
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">IFSC:</span>
+                        <span className="verification-result-value">{ifscResult.IFSC}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">Bank:</span>
+                        <span className="verification-result-value">{ifscResult.BANK}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">Branch:</span>
+                        <span className="verification-result-value">{ifscResult.BRANCH}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">Address:</span>
+                        <span className="verification-result-value">{ifscResult.ADDRESS}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">City:</span>
+                        <span className="verification-result-value">{ifscResult.CITY}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">District:</span>
+                        <span className="verification-result-value">{ifscResult.DISTRICT}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">State:</span>
+                        <span className="verification-result-value">{ifscResult.STATE}</span>
+                      </div>
+                      {ifscResult.CONTACT && (
+                        <div className="verification-result-row">
+                          <span className="verification-result-label">Contact:</span>
+                          <span className="verification-result-value">{ifscResult.CONTACT}</span>
+                        </div>
+                      )}
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">MICR:</span>
+                        <span className="verification-result-value">{ifscResult.MICR || 'N/A'}</span>
+                      </div>
+                      <div className="verification-result-row">
+                        <span className="verification-result-label">SWIFT:</span>
+                        <span className="verification-result-value">{ifscResult.SWIFT || 'N/A'}</span>
+                      </div>
+                      <div className="verification-result-features">
+                        <span className="verification-result-label">Services:</span>
+                        <div className="verification-features-list">
+                          {ifscResult.UPI && <span className="verification-feature-badge">UPI</span>}
+                          {ifscResult.RTGS && <span className="verification-feature-badge">RTGS</span>}
+                          {ifscResult.NEFT && <span className="verification-feature-badge">NEFT</span>}
+                          {ifscResult.IMPS && <span className="verification-feature-badge">IMPS</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* IFSC Error */}
+                {ifscError && (
+                  <div className="verification-error">
+                    <XCircle size={18} className="verification-error-icon" />
+                    <span>{ifscError}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -121,15 +212,15 @@ const Verification = () => {
                     placeholder="Enter account number"
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
-                    disabled={verifying}
+                    disabled={verifyingAccount}
                   />
                   <button
                     className="verification-button"
                     onClick={handleAccountNumberVerify}
-                    disabled={verifying || !accountNumber.trim()}
+                    disabled={verifyingAccount || !accountNumber.trim()}
                   >
                     <Search size={16} />
-                    {verifying ? 'Verifying...' : 'Verify'}
+                    {verifyingAccount ? 'Verifying...' : 'Verify'}
                   </button>
                 </div>
                 <p className="verification-hint">
