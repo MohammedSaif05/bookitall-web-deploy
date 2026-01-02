@@ -5,7 +5,7 @@ import { FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import Loading from '../components/common/Loading';
-import { getVendorDetailsByUserId, approveVendorProduction, rejectVendorImages, rejectVendorDocument, rejectVendorServices } from '../api/vendors';
+import { getVendorDetailsByUserId, approveVendorProduction, rejectVendorImages, rejectVendorDocument, rejectVendorServices, rejectVendorBankDetails } from '../api/vendors';
 import { ROUTES } from '../utils/constants';
 import { useCachedApi } from '../hooks/useCachedApi';
 import { CACHE_KEYS } from '../utils/cache';
@@ -26,6 +26,7 @@ const VendorDetails = () => {
   const [rejectingImages, setRejectingImages] = useState(false);
   const [rejectingDocument, setRejectingDocument] = useState(false);
   const [rejectingServices, setRejectingServices] = useState(false);
+  const [rejectingBankDetails, setRejectingBankDetails] = useState(false);
 
   // Create API function wrapper
   const fetchVendorDetails = React.useCallback(async () => {
@@ -252,6 +253,40 @@ const VendorDetails = () => {
       toast.error(err?.message || 'Failed to reject services');
     } finally {
       setRejectingServices(false);
+    }
+  };
+
+  const handleRejectBankDetails = async () => {
+    if (!id || vendor?.isBusinessVerified) return;
+
+    const { value: reason } = await Swal.fire({
+      title: 'Reject Bank Details',
+      input: 'text',
+      inputLabel: 'Reason for rejection',
+      inputPlaceholder: 'Enter reason for rejecting bank details',
+      inputValidator: (value) => (!value ? 'Reason is required' : undefined),
+      showCancelButton: true,
+      confirmButtonText: 'Reject',
+      confirmButtonColor: '#ef4444',
+    });
+
+    if (!reason) return;
+
+    try {
+      setRejectingBankDetails(true);
+      await rejectVendorBankDetails(id, reason);
+      await refetch(true);
+      Swal.fire({
+        icon: 'success',
+        title: 'Bank details rejected',
+        text: 'The bank details have been rejected successfully.',
+        timer: 2200,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      toast.error(err?.message || 'Failed to reject bank details');
+    } finally {
+      setRejectingBankDetails(false);
     }
   };
 
@@ -604,6 +639,17 @@ const VendorDetails = () => {
               </div>
             ) : (
               <p className="empty-state">No bank information available.</p>
+            )}
+            {!vendor.isBusinessVerified && (
+              <div className="section-actions">
+                <button
+                  className="reject-button"
+                  onClick={handleRejectBankDetails}
+                  disabled={rejectingBankDetails}
+                >
+                  {rejectingBankDetails ? 'Rejecting…' : 'Reject Bank Details'}
+                </button>
+              </div>
             )}
           </section>
 
