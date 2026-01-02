@@ -34,6 +34,9 @@ export const API_ENDPOINTS = {
     DETAIL: (id) => `/api/vendors/${id}`,
     UPDATE_STATUS: (id) => `/api/vendors/${id}/status`,
   },
+  VERIFICATION: {
+    VERIFY_IFSC: (ifscCode) => `/api/verification/verify-ifsc/${ifscCode}`,
+  },
 };
 
 export const TABLE_CONFIG = {
