@@ -1,14 +1,15 @@
-import axios from 'axios';
-
 /**
  * IFSC Verification API Service
+ * 
+ * Note: This calls the IFSC API directly from the frontend.
+ * If CORS errors occur, you'll need to create a backend proxy endpoint.
  */
 
 const IFSC_API_BASE_URL = 'https://ifsc.in/api/v1';
 const IFSC_API_KEY = 'f55035261a94b50103de695b1b7692ada9db9bbb28f957d57a46dd35aafa8e90';
 
 /**
- * Verify IFSC code
+ * Verify IFSC code using /validate endpoint
  * @param {string} ifscCode - IFSC code to verify
  * @returns {Promise} API response with bank details
  */
@@ -21,27 +22,35 @@ export const verifyIfsc = async (ifscCode) => {
   const cleanIfsc = ifscCode.trim().toUpperCase();
 
   try {
-    const response = await axios.get(`${IFSC_API_BASE_URL}/lookup/${cleanIfsc}`, {
+    // Direct API call using fetch
+    const response = await fetch(`${IFSC_API_BASE_URL}/validate/${cleanIfsc}`, {
+      method: 'GET',
       headers: {
         'X-API-KEY': IFSC_API_KEY,
         'Content-Type': 'application/json',
       },
-      timeout: 10000, // 10 second timeout
+      mode: 'cors',
     });
 
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      // API returned an error response
-      const errorMessage = error.response.data?.message || 'IFSC code not found or invalid';
-      throw new Error(errorMessage);
-    } else if (error.request) {
-      // Request was made but no response received
-      throw new Error('Network error. Please check your connection.');
-    } else {
-      // Something else happened
-      throw new Error(error.message || 'Failed to verify IFSC code');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // Handle CORS errors specifically
+    if (
+      error.message.includes('CORS') || 
+      error.message.includes('Access-Control') ||
+      error.message.includes('Failed to fetch') ||
+      error.message.includes('NetworkError')
+    ) {
+      throw new Error('CORS error: The IFSC API does not allow direct calls from the browser. Please create a backend proxy endpoint to call this API.');
+    }
+
+    throw error;
   }
 };
 
