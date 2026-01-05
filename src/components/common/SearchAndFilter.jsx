@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, Filter, Clock } from 'lucide-react';
 import './SearchAndFilter.css';
 
 const SearchAndFilter = ({
@@ -9,11 +9,13 @@ const SearchAndFilter = ({
   onCategoryChange,
   locationFilter,
   onLocationChange,
+  sortByTime,
+  onSortByTimeChange,
   categories = [],
   locations = [],
   onClearFilters,
 }) => {
-  const hasActiveFilters = searchQuery || categoryFilter || locationFilter;
+  const hasActiveFilters = searchQuery || categoryFilter || locationFilter || sortByTime;
 
   return (
     <div className="search-filter-container">
@@ -71,6 +73,20 @@ const SearchAndFilter = ({
                   {location}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <Clock className="filter-icon" size={16} />
+            <select
+              id="sort-time-filter"
+              className="filter-select"
+              value={sortByTime || ''}
+              onChange={(e) => onSortByTimeChange(e.target.value)}
+            >
+              <option value="">Sort by Time</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
             </select>
           </div>
 

@@ -9,6 +9,7 @@ export const useVendorFilters = (data = []) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [sortByTime, setSortByTime] = useState(''); // 'newest', 'oldest', or ''
 
   // Get unique categories and locations from data
   const { categories, locations } = useMemo(() => {
@@ -20,7 +21,7 @@ export const useVendorFilters = (data = []) => {
     };
   }, [data]);
 
-  // Filter data based on search and filters
+  // Filter and sort data based on search, filters, and sort
   const filteredData = useMemo(() => {
     let result = [...data];
 
@@ -52,12 +53,27 @@ export const useVendorFilters = (data = []) => {
       result = result.filter((vendor) => vendor.location === locationFilter);
     }
 
+    // Apply time sorting based on updatedAt
+    if (sortByTime) {
+      result.sort((a, b) => {
+        const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        
+        if (sortByTime === 'newest') {
+          return dateB - dateA; // Newest first (descending)
+        } else if (sortByTime === 'oldest') {
+          return dateA - dateB; // Oldest first (ascending)
+        }
+        return 0;
+      });
+    }
+
     // Update serial numbers
     return result.map((vendor, index) => ({
       ...vendor,
       serialNo: index + 1,
     }));
-  }, [data, searchQuery, categoryFilter, locationFilter]);
+  }, [data, searchQuery, categoryFilter, locationFilter, sortByTime]);
 
   const handleSearchChange = (value) => {
     setSearchQuery(value);
@@ -71,24 +87,31 @@ export const useVendorFilters = (data = []) => {
     setLocationFilter(value);
   };
 
+  const handleSortByTimeChange = (value) => {
+    setSortByTime(value);
+  };
+
   const clearFilters = () => {
     setSearchQuery('');
     setCategoryFilter('');
     setLocationFilter('');
+    setSortByTime('');
   };
 
-  const hasActiveFilters = searchQuery || categoryFilter || locationFilter;
+  const hasActiveFilters = searchQuery || categoryFilter || locationFilter || sortByTime;
 
   return {
     filteredData,
     searchQuery,
     categoryFilter,
     locationFilter,
+    sortByTime,
     categories,
     locations,
     handleSearchChange,
     handleCategoryChange,
     handleLocationChange,
+    handleSortByTimeChange,
     clearFilters,
     hasActiveFilters,
   };

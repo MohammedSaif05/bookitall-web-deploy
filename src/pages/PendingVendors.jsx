@@ -28,11 +28,13 @@ const PendingVendors = () => {
     searchQuery,
     categoryFilter,
     locationFilter,
+    sortByTime,
     categories,
     locations,
     handleSearchChange,
     handleCategoryChange,
     handleLocationChange,
+    handleSortByTimeChange,
     clearFilters,
   } = useVendorFilters(vendorsData || []);
 
@@ -170,6 +172,8 @@ const PendingVendors = () => {
         onCategoryChange={handleCategoryChange}
         locationFilter={locationFilter}
         onLocationChange={handleLocationChange}
+        sortByTime={sortByTime}
+        onSortByTimeChange={handleSortByTimeChange}
         categories={categories}
         locations={locations}
         onClearFilters={clearFilters}
