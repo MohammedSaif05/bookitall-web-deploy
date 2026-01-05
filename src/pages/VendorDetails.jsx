@@ -37,12 +37,7 @@ const VendorDetails = () => {
   );
 
   const shopImages = useMemo(() => {
-    // Only show images if they are approved (isBusinessImageApproved === true)
-    // If rejected (false) or not yet reviewed (null/undefined), show empty
-    if (vendor?.isBusinessImageApproved !== true) {
-      return [];
-    }
-
+    // Show images if they exist, regardless of approval status
     // Prioritize businessImages from new API response
     if (Array.isArray(vendor?.businessImages) && vendor.businessImages.length > 0) {
       return vendor.businessImages.slice(0, 2);
@@ -67,13 +62,9 @@ const VendorDetails = () => {
     return [];
   }, [vendor]);
 
-  // Get business document (single PDF) - only if approved
+  // Get business document (single PDF) - show if it exists
   const businessDocument = useMemo(() => {
-    // Only show document if it is approved (isBusinessDocumentApproved === true)
-    // If rejected (false) or not yet reviewed (null/undefined), show empty
-    if (vendor?.isBusinessDocumentApproved !== true) {
-      return null;
-    }
+    // Show document if it exists, regardless of approval status
     return vendor?.businessDocument || null;
   }, [vendor]);
 
@@ -542,12 +533,31 @@ const VendorDetails = () => {
               </h2>
               <div className="services-grid">
                 {vendor.services.map((service, index) => (
-                  <div key={index} className="service-card">
+                  <div key={service.serviceId || index} className="service-card">
+                    {service.serviceImage && (
+                      <div className="service-image-container">
+                        <img
+                          src={service.serviceImage}
+                          alt={service.serviceName || 'Service image'}
+                          className="service-image"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
                     <div className="service-header">
                       <h3 className="service-name">{service.serviceName || 'N/A'}</h3>
                       <span className="service-cost">₹{service.serviceCost || '0'}</span>
                     </div>
                     <div className="service-details">
+                      {service.serviceId && (
+                        <div className="service-detail-item">
+                          <label>Service ID</label>
+                          <span>{service.serviceId}</span>
+                        </div>
+                      )}
                       <div className="service-detail-item">
                         <label>Duration</label>
                         <span>{service.serviceDuration || 'N/A'} minutes</span>
@@ -556,6 +566,48 @@ const VendorDetails = () => {
                         <label>Gender</label>
                         <span className={`gender-badge gender-${service.gender?.toLowerCase() || 'unisex'}`}>
                           {service.gender || 'N/A'}
+                        </span>
+                      </div>
+                      {service.category && (
+                        <div className="service-detail-item">
+                          <label>Category</label>
+                          <span>{service.category}</span>
+                        </div>
+                      )}
+                      {service.description && (
+                        <div className="service-detail-item full-width">
+                          <label>Description</label>
+                          <span>{service.description}</span>
+                        </div>
+                      )}
+                      {service.bufferTime !== null && service.bufferTime !== undefined && (
+                        <div className="service-detail-item">
+                          <label>Buffer Time</label>
+                          <span>{service.bufferTime} minutes</span>
+                        </div>
+                      )}
+                      {service.maximumNo && (
+                        <div className="service-detail-item">
+                          <label>Maximum Number</label>
+                          <span>{service.maximumNo}</span>
+                        </div>
+                      )}
+                      {service.assignedStaff && Array.isArray(service.assignedStaff) && service.assignedStaff.length > 0 && (
+                        <div className="service-detail-item full-width">
+                          <label>Assigned Staff</label>
+                          <div className="assigned-staff-list">
+                            {service.assignedStaff.map((staff, staffIndex) => (
+                              <span key={staffIndex} className="staff-badge">
+                                {staff}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="service-detail-item">
+                        <label>Status</label>
+                        <span className={`status-badge ${service.isActive ? 'status-active' : 'status-inactive'}`}>
+                          {service.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                     </div>
@@ -658,7 +710,7 @@ const VendorDetails = () => {
               <ImageIcon size={20} />
               Shop Images
             </h2>
-            {vendor.imageRejectMessage && (
+            {vendor.imageRejectMessage && vendor.isBusinessImageApproved === false && (
               <div className="rejection-message">
                 <span className="rejection-label">Rejection Reason:</span>
                 <span className="rejection-text">{vendor.imageRejectMessage}</span>
@@ -703,7 +755,7 @@ const VendorDetails = () => {
               <FileText size={20} />
               Business Document
             </h2>
-            {vendor.documentRejectMessage && (
+            {vendor.documentRejectMessage && vendor.isBusinessDocumentApproved === false && (
               <div className="rejection-message">
                 <span className="rejection-label">Rejection Reason:</span>
                 <span className="rejection-text">{vendor.documentRejectMessage}</span>
