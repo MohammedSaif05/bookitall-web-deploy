@@ -56,8 +56,21 @@ export const useVendorFilters = (data = []) => {
     // Apply time sorting based on updatedAt
     if (sortByTime) {
       result.sort((a, b) => {
-        const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-        const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        // Get dates, handling various date formats and null/undefined values
+        const getDateValue = (vendor) => {
+          if (!vendor.updatedAt) return 0;
+          const date = new Date(vendor.updatedAt);
+          return isNaN(date.getTime()) ? 0 : date.getTime();
+        };
+        
+        const dateA = getDateValue(a);
+        const dateB = getDateValue(b);
+        
+        // If both dates are invalid (0), maintain original order
+        if (dateA === 0 && dateB === 0) return 0;
+        // Items without dates go to the end
+        if (dateA === 0) return 1;
+        if (dateB === 0) return -1;
         
         if (sortByTime === 'newest') {
           return dateB - dateA; // Newest first (descending)

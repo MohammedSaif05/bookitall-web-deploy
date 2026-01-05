@@ -138,6 +138,7 @@ export const getPendingVendors = async () => {
       location: vendor.location || vendor.city || 'N/A',
       mobileNumber: vendor.mobileNumber || vendor.mobileNo || 'N/A',
       status: 'Pending',
+      updatedAt: vendor.updatedAt || vendor.updated_at || null,
     }));
     
     return { data: transformedData };
@@ -166,6 +167,7 @@ export const getVerifiedVendors = async () => {
       location: vendor.location || vendor.city || 'N/A',
       mobileNumber: vendor.mobileNumber || vendor.mobileNo || 'N/A',
       status: 'Verified',
+      updatedAt: vendor.updatedAt || vendor.updated_at || null,
     }));
     
     return { data: transformedData };
