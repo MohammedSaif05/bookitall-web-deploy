@@ -12,12 +12,6 @@ import { CACHE_KEYS } from '../utils/cache';
 import { formatPhoneNumber, formatDate } from '../utils/helpers';
 import './VendorDetails.css';
 
-const sampleShopImages = [
-  // Turf-themed sample
-  'https://images.unsplash.com/photo-1554254227-712e1b02c279?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1639070462748-42d7716ee0cd?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-];
-
 const VendorDetails = () => {
   const { id } = useParams(); // This is the userId
   const navigate = useNavigate();
@@ -43,8 +37,9 @@ const VendorDetails = () => {
   );
 
   const shopImages = useMemo(() => {
-    // If images are rejected, don't show sample images
-    if (vendor?.isBusinessImageApproved === false) {
+    // Only show images if they are approved (isBusinessImageApproved === true)
+    // If rejected (false) or not yet reviewed (null/undefined), show empty
+    if (vendor?.isBusinessImageApproved !== true) {
       return [];
     }
 
@@ -68,12 +63,17 @@ const VendorDetails = () => {
       return fallbackImages.slice(0, 2);
     }
 
-    // Only show sample images if images are not rejected
-    return sampleShopImages;
+    // Return empty array by default - will show "No shop images uploaded"
+    return [];
   }, [vendor]);
 
-  // Get business document (single PDF)
+  // Get business document (single PDF) - only if approved
   const businessDocument = useMemo(() => {
+    // Only show document if it is approved (isBusinessDocumentApproved === true)
+    // If rejected (false) or not yet reviewed (null/undefined), show empty
+    if (vendor?.isBusinessDocumentApproved !== true) {
+      return null;
+    }
     return vendor?.businessDocument || null;
   }, [vendor]);
 
@@ -336,13 +336,11 @@ const VendorDetails = () => {
                   {approving ? 'Approving…' : 'Approve'}
                 </button>
               )}
-              <span
-                className={`status-badge ${
-                  vendor.isBusinessVerified ? 'status-verified' : 'status-pending'
-                }`}
-              >
-                {vendor.isBusinessVerified ? 'Verified' : 'Pending'}
-              </span>
+              {vendor.isBusinessVerified && (
+                <span className="status-badge status-verified">
+                  Verified
+                </span>
+              )}
               <button
                 className="refresh-button"
                 onClick={handleRefresh}
@@ -377,10 +375,7 @@ const VendorDetails = () => {
                 <label>Business Category</label>
                 <p>{vendor.businessCategory || 'N/A'}</p>
               </div>
-              <div className="info-item">
-                <label>Business Email</label>
-                <p>{vendor.businessEmail || 'N/A'}</p>
-              </div>
+              
             </div>
           </section>
 
@@ -402,6 +397,10 @@ const VendorDetails = () => {
               <div className="info-item">
                 <label>Alternate Phone</label>
                 <p>{formatPhoneNumber(vendor.alternatePhoneNumber) || 'N/A'}</p>
+              </div>
+              <div className="info-item">
+                <label>Business Email</label>
+                <p>{vendor.businessEmail || 'N/A'}</p>
               </div>
             </div>
           </section>
@@ -659,7 +658,7 @@ const VendorDetails = () => {
               <ImageIcon size={20} />
               Shop Images
             </h2>
-            {vendor.isBusinessImageApproved === false && vendor.imageRejectMessage && (
+            {vendor.imageRejectMessage && (
               <div className="rejection-message">
                 <span className="rejection-label">Rejection Reason:</span>
                 <span className="rejection-text">{vendor.imageRejectMessage}</span>
@@ -704,7 +703,7 @@ const VendorDetails = () => {
               <FileText size={20} />
               Business Document
             </h2>
-            {vendor.isBusinessDocumentApproved === false && vendor.documentRejectMessage && (
+            {vendor.documentRejectMessage && (
               <div className="rejection-message">
                 <span className="rejection-label">Rejection Reason:</span>
                 <span className="rejection-text">{vendor.documentRejectMessage}</span>
