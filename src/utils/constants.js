@@ -6,6 +6,7 @@ export const ROUTES = {
   VENDOR_ONBOARDING: '/dashboard/vendor/onboarding',
   VENDOR_PENDING: '/dashboard/vendor/pending',
   VENDOR_DETAILS: (id) => `/dashboard/vendor/details/${id}`,
+  VERIFIED_VENDOR_DETAILS: (id) => `/dashboard/vendor/verified/${id}`,
   VERIFICATION: '/dashboard/verification',
 };
 

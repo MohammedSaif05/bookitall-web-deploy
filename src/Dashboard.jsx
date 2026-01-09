@@ -8,6 +8,7 @@ import sidebarLogo from './assets/sidebarlogo.png';
 import VerifiedVendors from './pages/VerifiedVendors';
 import PendingVendors from './pages/PendingVendors';
 import VendorDetails from './pages/VendorDetails';
+import VerifiedVendorDetails from './pages/VerifiedVendorDetails';
 import Verification from './pages/Verification';
 import { useAuth } from './contexts/AuthContext';
 import { ROUTES } from './utils/constants';
@@ -215,6 +216,8 @@ const Dashboard = () => {
         <div className="dashboard-content">
           {location.pathname.includes('/vendor/details/') ? (
             <VendorDetails />
+          ) : location.pathname.includes('/vendor/verified/') ? (
+            <VerifiedVendorDetails />
           ) : location.pathname.includes('/onboarding') ? (
             <VerifiedVendors />
           ) : location.pathname.includes('/pending') ? (

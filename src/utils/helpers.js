@@ -49,6 +49,7 @@ export const getPageTitle = (pathname) => {
   if (pathname.includes('/onboarding')) return 'Vendor Management';
   if (pathname.includes('/pending')) return 'Vendor Management';
   if (pathname.includes('/vendor/details/')) return 'Vendor Details';
+  if (pathname.includes('/vendor/verified/')) return 'Verified Vendor Details';
   if (pathname.includes('/verification')) return 'Verification';
   return 'Dashboard';
 };

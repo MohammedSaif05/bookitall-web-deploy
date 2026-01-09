@@ -44,6 +44,14 @@ function App() {
           }
         />
         <Route
+          path="/dashboard/vendor/verified/:id"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path={ROUTES.VERIFICATION}
           element={
             <PrivateRoute>

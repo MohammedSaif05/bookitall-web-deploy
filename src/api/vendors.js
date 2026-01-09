@@ -192,6 +192,21 @@ export const getVendorDetailsByUserId = async (userId) => {
 };
 
 /**
+ * Get verified vendor details by userId
+ * @param {string} userId - Vendor userId
+ * @returns {Promise} Verified vendor details response
+ */
+export const getVerifiedVendorDetailsByUserId = async (userId) => {
+  const response = await apiClient.get(`/api/vendors/verified-view/${userId}`);
+  
+  if (response.data.success && response.data.data) {
+    return { data: response.data.data };
+  }
+  
+  throw new Error('Verified vendor details not found');
+};
+
+/**
  * Get vendor by ID
  */
 export const getVendorById = async (id) => {

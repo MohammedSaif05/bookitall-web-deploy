@@ -496,6 +496,83 @@
   border: 1px solid #fecaca;
 }
 
+/* Availability */
+.availability-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.availability-item {
+  padding: 12px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.availability-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.availability-header strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.availability-time {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Staff */
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.staff-card {
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: all 0.15s ease;
+}
+
+.staff-card:hover {
+  border-color: #d1d5db;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.staff-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.staff-status {
+  display: flex;
+  align-items: center;
+}
+
+.text-green-600 {
+  color: #16a34a;
+}
+
+.text-red-600 {
+  color: #dc2626;
+}
+
 .gender-male {
   background-color: #dbeafe;
   color: #1e40af;

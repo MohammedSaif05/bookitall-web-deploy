@@ -58,10 +58,10 @@ const VerifiedVendors = () => {
   };
 
   const handleView = (row) => {
-    // Navigate to vendor details page using userId
+    // Navigate to verified vendor details page using userId
     const userId = row.userId || row.id;
     if (userId) {
-      navigate(ROUTES.VENDOR_DETAILS(userId));
+      navigate(`/dashboard/vendor/verified/${userId}`);
     } else {
       toast.error('Vendor ID not found');
     }
@@ -84,11 +84,6 @@ const VerifiedVendors = () => {
     {
       key: 'businessCategory',
       header: 'Business Category',
-    },
-    {
-      key: 'shopId',
-      header: 'Shop ID',
-      className: 'text-center',
     },
     {
       key: 'location',
@@ -131,7 +126,7 @@ const VerifiedVendors = () => {
           <p>Manage and view all verified vendors</p>
         </div>
         <div className="table-wrapper">
-          <SkeletonTable rows={5} columns={9} />
+          <SkeletonTable rows={5} columns={8} />
         </div>
       </div>
     );
