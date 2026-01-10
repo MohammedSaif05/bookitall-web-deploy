@@ -44,10 +44,10 @@ const SearchAndFilter = ({
         {/* Filters */}
         <div className="filters-row">
           <div className="filter-group">
-            <Filter className="filter-icon" size={16} />
+            <Filter className="filter-icon filter-icon-left" size={16} />
             <select
               id="category-filter"
-              className="filter-select"
+              className="filter-select filter-select-with-icon"
               value={categoryFilter}
               onChange={(e) => onCategoryChange(e.target.value)}
             >
@@ -77,10 +77,10 @@ const SearchAndFilter = ({
           </div>
 
           <div className="filter-group">
-            <Clock className="filter-icon" size={16} />
+            <Clock className="filter-icon filter-icon-left" size={16} />
             <select
               id="sort-time-filter"
-              className="filter-select"
+              className="filter-select filter-select-with-icon"
               value={sortByTime || ''}
               onChange={(e) => onSortByTimeChange(e.target.value)}
             >

@@ -105,7 +105,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -116,6 +115,16 @@
   width: 16px;
   height: 16px;
   display: block;
+}
+
+.filter-icon-left {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  pointer-events: none;
+  color: #9333ea;
 }
 
 .filter-select {
@@ -139,11 +148,20 @@
   line-height: 1.5;
 }
 
+.filter-select-with-icon {
+  padding-left: 40px;
+}
+
 .filter-select:focus {
   outline: none;
   border-color: #9333ea;
   background-color: #ffffff;
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+}
+
+.filter-select-with-icon:focus ~ .filter-icon-left,
+.filter-group:focus-within .filter-icon-left {
+  color: #9333ea;
 }
 
 .filter-select:hover:not(:focus) {
@@ -219,6 +237,14 @@
     min-width: 140px;
     max-width: 100%;
   }
+
+  .filter-select-with-icon {
+    padding-left: 38px;
+  }
+
+  .filter-icon-left {
+    left: 11px;
+  }
 }
 
 /* Tablets (481px - 768px) - Account for sidebar collapsed (100px) */
@@ -246,6 +272,14 @@
     width: 100%;
     min-width: 100%;
     max-width: 100%;
+  }
+
+  .filter-select-with-icon {
+    padding-left: 36px;
+  }
+
+  .filter-icon-left {
+    left: 10px;
   }
 
   .clear-filters-btn {
@@ -287,6 +321,16 @@
   .filter-select {
     padding: 10px 32px 10px 10px;
     font-size: 13px;
+  }
+
+  .filter-select-with-icon {
+    padding-left: 36px;
+  }
+
+  .filter-icon-left {
+    left: 10px;
+    width: 14px;
+    height: 14px;
   }
 
   .clear-filters-btn {
