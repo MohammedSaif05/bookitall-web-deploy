@@ -299,6 +299,22 @@ const VerifiedVendorDetails = () => {
                           <span>{service.maximumNo}</span>
                         </div>
                       )}
+                      {service.assignedStaff && Array.isArray(service.assignedStaff) && (
+                        <div className="service-detail-item full-width">
+                          <label>Assigned Staff</label>
+                          <div className="assigned-staff-list">
+                            {service.assignedStaff.length > 0 ? (
+                              service.assignedStaff.map((staff, staffIndex) => (
+                                <span key={staffIndex} className="staff-badge">
+                                  {staff}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="no-staff">No staff assigned</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       <div className="service-detail-item">
                         <label>Status</label>
                         <span className={`status-badge ${service.isActive ? 'status-active' : 'status-inactive'}`}>

@@ -475,6 +475,12 @@
   border-radius: 6px;
 }
 
+.no-staff {
+  color: #9ca3af;
+  font-size: 12px;
+  font-style: italic;
+}
+
 .status-badge {
   display: inline-block;
   padding: 4px 10px;
