@@ -481,6 +481,74 @@
   word-break: break-word;
 }
 
+/* Modal Action Buttons */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.modal-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.modal-action-btn svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.modal-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-action-btn-approve {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.modal-action-btn-approve:hover:not(:disabled) {
+  background-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.modal-action-btn-approve:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.modal-action-btn-reject {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.modal-action-btn-reject:hover:not(:disabled) {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.modal-action-btn-reject:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .service-detail-item-full {
   grid-column: 1 / -1;
 }
@@ -611,6 +679,17 @@
   .staff-badge {
     padding: 5px 10px;
     font-size: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-action-btn {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 13px;
   }
 }
 

@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { FaSync, FaTimes } from 'react-icons/fa';
-import { Eye, Filter, X } from 'lucide-react';
+import { Eye, Filter, X, Check, XCircle } from 'lucide-react';
+import Swal from 'sweetalert2';
 import Table from '../components/Table';
 import Loading from '../components/common/Loading';
 import { SkeletonTable } from '../components/common/Skeleton';
 import { useCachedApi } from '../hooks/useCachedApi';
-import { getServiceApprovals } from '../api/vendors';
+import { getServiceApprovals, approveService, rejectService } from '../api/vendors';
 import { CACHE_KEYS } from '../utils/cache';
 import { formatDate } from '../utils/helpers';
 import './ServiceApprovals.css';
@@ -15,6 +16,8 @@ const ServiceApprovals = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   
   // Filters
   const [statusFilter, setStatusFilter] = useState('');
@@ -77,6 +80,88 @@ const ServiceApprovals = () => {
   const handleCloseModal = () => {
     setShowDetailModal(false);
     setSelectedService(null);
+    setApproving(false);
+    setRejecting(false);
+  };
+
+  const handleApprove = async () => {
+    if (!selectedService?._id) {
+      toast.error('Service ID not found');
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: 'Approve Service?',
+      text: `Are you sure you want to approve "${selectedService.serviceName || 'this service'}"?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#9333ea',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Approve',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setApproving(true);
+        const response = await approveService(selectedService._id);
+        
+        if (response.success && response.data?.success) {
+          toast.success(response.data.message || 'Service approved successfully');
+          handleCloseModal();
+          // Refresh the list
+          await refetch(true);
+        } else {
+          throw new Error(response.data?.message || 'Failed to approve service');
+        }
+      } catch (error) {
+        console.error('Error approving service:', error);
+        toast.error(error.response?.data?.message || error.message || 'Failed to approve service');
+      } finally {
+        setApproving(false);
+      }
+    }
+  };
+
+  const handleReject = async () => {
+    if (!selectedService?._id) {
+      toast.error('Service ID not found');
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: 'Reject Service?',
+      text: `Are you sure you want to reject "${selectedService.serviceName || 'this service'}"? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Reject',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setRejecting(true);
+        const response = await rejectService(selectedService._id);
+        
+        if (response.success && response.data?.success) {
+          toast.success(response.data.message || 'Service rejected successfully');
+          handleCloseModal();
+          // Refresh the list
+          await refetch(true);
+        } else {
+          throw new Error(response.data?.message || 'Failed to reject service');
+        }
+      } catch (error) {
+        console.error('Error rejecting service:', error);
+        toast.error(error.response?.data?.message || error.message || 'Failed to reject service');
+      } finally {
+        setRejecting(false);
+      }
+    }
   };
 
   const clearFilters = () => {
@@ -355,6 +440,28 @@ const ServiceApprovals = () => {
                   <p>{selectedService.createdAt ? formatDate(selectedService.createdAt) : 'N/A'}</p>
                 </div>
               </div>
+
+              {/* Action Buttons */}
+              {selectedService.status === 'pending' && (
+                <div className="modal-actions">
+                  <button
+                    className="modal-action-btn modal-action-btn-approve"
+                    onClick={handleApprove}
+                    disabled={approving || rejecting}
+                  >
+                    <Check size={18} />
+                    <span>{approving ? 'Approving...' : 'Approve'}</span>
+                  </button>
+                  <button
+                    className="modal-action-btn modal-action-btn-reject"
+                    onClick={handleReject}
+                    disabled={approving || rejecting}
+                  >
+                    <XCircle size={18} />
+                    <span>{rejecting ? 'Rejecting...' : 'Reject'}</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -346,3 +346,25 @@ export const approveVendorProduction = async (userId) => {
   return response.data;
 };
 
+/**
+ * Approve service for production
+ * @param {string} serviceApprovalId - Service approval ID (serviceId)
+ * @returns {Promise} API response
+ */
+export const approveService = async (serviceApprovalId) => {
+  const response = await apiClient.post(`/api/vendor/${serviceApprovalId}/prod-approve-service`);
+  
+  return response.data;
+};
+
+/**
+ * Reject service request
+ * @param {string} serviceApprovalId - Service approval ID (serviceId)
+ * @returns {Promise} API response
+ */
+export const rejectService = async (serviceApprovalId) => {
+  const response = await apiClient.post(`/api/vendor/${serviceApprovalId}/prod-reject-service`);
+  
+  return response.data;
+};
+
