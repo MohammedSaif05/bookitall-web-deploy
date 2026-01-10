@@ -305,10 +305,26 @@ export const rejectVendorBankDetails = async (userId, reason) => {
 
 /**
  * Get service approvals list
+ * @param {Object} filters - Query parameters (status, businessId, vendorId)
  * @returns {Promise} Service approvals list response
  */
-export const getServiceApprovals = async () => {
-  const response = await apiClient.get('/api/vendor/service-approvals');
+export const getServiceApprovals = async (filters = {}) => {
+  const params = new URLSearchParams();
+  
+  if (filters.status) {
+    params.append('status', filters.status);
+  }
+  if (filters.businessId) {
+    params.append('businessId', filters.businessId);
+  }
+  if (filters.vendorId) {
+    params.append('vendorId', filters.vendorId);
+  }
+  
+  const queryString = params.toString();
+  const url = `/api/vendor/service-approvals${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await apiClient.get(url);
   
   if (response.data.success && Array.isArray(response.data.data)) {
     return { data: response.data.data };
