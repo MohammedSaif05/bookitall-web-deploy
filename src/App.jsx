@@ -59,6 +59,14 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path={ROUTES.SERVICE_APPROVALS}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { LayoutDashboard, Store, LogOut, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Store, LogOut, ShieldCheck, CheckSquare } from 'lucide-react';
 import { FaUserCheck, FaClock, FaChevronDown, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import logoImg from './assets/logo.png';
 import sidebarLogo from './assets/sidebarlogo.png';
@@ -10,6 +10,7 @@ import PendingVendors from './pages/PendingVendors';
 import VendorDetails from './pages/VendorDetails';
 import VerifiedVendorDetails from './pages/VerifiedVendorDetails';
 import Verification from './pages/Verification';
+import ServiceApprovals from './pages/ServiceApprovals';
 import { useAuth } from './contexts/AuthContext';
 import { ROUTES } from './utils/constants';
 import { getPageTitle, isVendorPage } from './utils/helpers';
@@ -100,6 +101,12 @@ const Dashboard = () => {
         description: 'Verify IFSC codes and account numbers.',
       };
     }
+    if (location.pathname.includes('/services/approvals')) {
+      return {
+        title: 'Services Approvals',
+        description: 'Review and approve service requests.',
+      };
+    }
     return {
       title: 'Welcome to Dashboard',
       description: 'This is your main dashboard page.',
@@ -146,6 +153,14 @@ const Dashboard = () => {
           >
             <ShieldCheck className="sidebar-icon" size={20} />
             {isOpen && <span>Verification</span>}
+          </button>
+          <button
+            className={`sidebar-item ${location.pathname === ROUTES.SERVICE_APPROVALS ? 'active' : ''}`}
+            onClick={() => navigate(ROUTES.SERVICE_APPROVALS)}
+            title={!isOpen ? 'Services Approvals' : ''}
+          >
+            <CheckSquare className="sidebar-icon" size={20} />
+            {isOpen && <span>Services Approvals</span>}
           </button>
           <div className="sidebar-dropdown">
             <button
@@ -224,6 +239,8 @@ const Dashboard = () => {
             <PendingVendors />
           ) : location.pathname.includes('/verification') ? (
             <Verification />
+          ) : location.pathname.includes('/services/approvals') ? (
+            <ServiceApprovals />
           ) : (
             <div className="dashboard-card">
               <h2>{content.title}</h2>

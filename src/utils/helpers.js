@@ -51,6 +51,7 @@ export const getPageTitle = (pathname) => {
   if (pathname.includes('/vendor/details/')) return 'Vendor Details';
   if (pathname.includes('/vendor/verified/')) return 'Verified Vendor Details';
   if (pathname.includes('/verification')) return 'Verification';
+  if (pathname.includes('/services/approvals')) return 'Services Approvals';
   return 'Dashboard';
 };
 

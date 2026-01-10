@@ -8,6 +8,7 @@ export const ROUTES = {
   VENDOR_DETAILS: (id) => `/dashboard/vendor/details/${id}`,
   VERIFIED_VENDOR_DETAILS: (id) => `/dashboard/vendor/verified/${id}`,
   VERIFICATION: '/dashboard/verification',
+  SERVICE_APPROVALS: '/dashboard/services/approvals',
 };
 
 export const VENDOR_STATUS = {

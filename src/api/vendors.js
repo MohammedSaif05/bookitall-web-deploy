@@ -304,6 +304,20 @@ export const rejectVendorBankDetails = async (userId, reason) => {
 };
 
 /**
+ * Get service approvals list
+ * @returns {Promise} Service approvals list response
+ */
+export const getServiceApprovals = async () => {
+  const response = await apiClient.get('/api/vendor/service-approvals');
+  
+  if (response.data.success && Array.isArray(response.data.data)) {
+    return { data: response.data.data };
+  }
+  
+  return { data: [] };
+};
+
+/**
  * Approve vendor for production
  * @param {string} userId - Vendor userId
  * @returns {Promise} API response
