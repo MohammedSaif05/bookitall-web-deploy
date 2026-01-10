@@ -66,6 +66,9 @@
 
 .refresh-button svg {
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .refresh-button svg.spinning {

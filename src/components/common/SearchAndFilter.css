@@ -111,8 +111,11 @@
 }
 
 .filter-icon {
-  color: #6b7280;
+  color: #9333ea;
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .filter-select {
@@ -133,6 +136,7 @@
   background-position: right 12px center;
   font-weight: 400;
   box-sizing: border-box;
+  line-height: 1.5;
 }
 
 .filter-select:focus {
