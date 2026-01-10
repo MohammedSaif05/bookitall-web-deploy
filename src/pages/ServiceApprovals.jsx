@@ -328,6 +328,20 @@ const ServiceApprovals = () => {
                       : 'N/A'}
                   </p>
                 </div>
+                <div className="service-detail-item service-detail-item-full">
+                  <label>Assigned Staff</label>
+                  <div className="assigned-staff-list">
+                    {selectedService.assignedStaff && Array.isArray(selectedService.assignedStaff) && selectedService.assignedStaff.length > 0 ? (
+                      selectedService.assignedStaff.map((staff, index) => (
+                        <span key={index} className="staff-badge">
+                          {staff}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="no-staff">No staff assigned</span>
+                    )}
+                  </div>
+                </div>
                 <div className="service-detail-item">
                   <label>Status</label>
                   <p>

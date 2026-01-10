@@ -34,8 +34,9 @@
 }
 
 .refresh-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 10px 16px;
   background-color: #9333ea;
@@ -47,6 +48,9 @@
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  box-sizing: border-box;
+  height: auto;
+  line-height: 1.5;
 }
 
 .refresh-button:hover:not(:disabled) {
@@ -64,14 +68,23 @@
   cursor: not-allowed;
 }
 
-.refresh-button svg {
+.refresh-button svg,
+.refresh-button .spinning {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  display: block;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
 }
 
-.refresh-button svg.spinning {
+.refresh-button span {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.refresh-button svg.spinning,
+.refresh-button .spinning {
   animation: spin 1s linear infinite;
 }
 
@@ -116,6 +129,12 @@
   .refresh-button {
     padding: 8px 14px;
     font-size: 13px;
+  }
+
+  .refresh-button svg,
+  .refresh-button .spinning {
+    width: 14px;
+    height: 14px;
   }
 }
 
