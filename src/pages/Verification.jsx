@@ -11,7 +11,7 @@ const Verification = () => {
   const [verifyingAccount, setVerifyingAccount] = useState(false);
   const [ifscResult, setIfscResult] = useState(null);
   const [ifscError, setIfscError] = useState(null);
-  const [location, setLocation] = useState('adhiyamaan college of en');
+  const [location, setLocation] = useState('');
   const [googleMapsLink, setGoogleMapsLink] = useState('');
   const [coordinates, setCoordinates] = useState(null);
 
@@ -344,7 +344,7 @@ const Verification = () => {
                   scrolling="no"
                   marginHeight="0"
                   marginWidth="0"
-                  src={`https://maps.google.com/maps?width=600&height=400&hl=en&q=${encodeURIComponent(location)}&t=&z=15&ie=UTF8&iwloc=B&output=embed`}
+                  src={`https://maps.google.com/maps?width=600&height=400&hl=en&q=${encodeURIComponent(location || 'tamilnadu')}&t=&z=15&ie=UTF8&iwloc=B&output=embed`}
                   title="Location Verification Map"
                 />
               </div>
