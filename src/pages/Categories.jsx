@@ -4,7 +4,7 @@ import { FaSync, FaEdit } from 'react-icons/fa';
 import { Plus, X } from 'lucide-react';
 import Loading from '../components/common/Loading';
 import { useCachedApi } from '../hooks/useCachedApi';
-import { getCategories, uploadCategoryImage, addCategory } from '../api/categories';
+import { getCategories, uploadCategoryImage, addCategory, updateCategory } from '../api/categories';
 import { CACHE_KEYS } from '../utils/cache';
 import { formatDate } from '../utils/helpers';
 import './Categories.css';
@@ -12,9 +12,12 @@ import './Categories.css';
 const Categories = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [categoryName, setCategoryName] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [categoryOrder, setCategoryOrder] = useState(0);
+  const [isActive, setIsActive] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -43,17 +46,33 @@ const Categories = () => {
   };
 
   const handleAddCategory = () => {
+    setEditingCategory(null);
     setShowAddModal(true);
     setCategoryName('');
     setSelectedImage(null);
     setImagePreview(null);
+    setCategoryOrder(0);
+    setIsActive(true);
+  };
+
+  const handleEditCategory = (category) => {
+    setEditingCategory(category);
+    setShowAddModal(true);
+    setCategoryName(category.name || '');
+    setSelectedImage(null);
+    setImagePreview(category.image || null);
+    setCategoryOrder(category.order !== undefined ? category.order : 0);
+    setIsActive(category.isActive !== undefined ? category.isActive : true);
   };
 
   const handleCloseModal = () => {
     setShowAddModal(false);
+    setEditingCategory(null);
     setCategoryName('');
     setSelectedImage(null);
     setImagePreview(null);
+    setCategoryOrder(0);
+    setIsActive(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -92,50 +111,86 @@ const Categories = () => {
       return;
     }
 
-    if (!selectedImage) {
-      toast.error('Please select an image');
-      return;
-    }
+    if (editingCategory) {
+      // Edit mode
+      try {
+        setUploading(true);
 
-    try {
-      setUploading(true);
+        let imageUrl = editingCategory.image; // Use existing image by default
 
-      // Step 1: Upload image
-      const uploadResponse = await uploadCategoryImage(selectedImage);
-      
-      if (!uploadResponse.success || !uploadResponse.data?.imageUrl) {
-        throw new Error(uploadResponse.message || 'Failed to upload image');
+        // If a new image is selected, upload it first
+        if (selectedImage) {
+          const uploadResponse = await uploadCategoryImage(selectedImage);
+          
+          if (!uploadResponse.success || !uploadResponse.data?.imageUrl) {
+            throw new Error(uploadResponse.message || 'Failed to upload image');
+          }
+
+          imageUrl = uploadResponse.data.imageUrl;
+        }
+
+        // Prepare update data
+        const updateData = {
+          name: categoryName.trim(),
+          image: imageUrl,
+          order: categoryOrder,
+          isActive: isActive,
+        };
+
+        // Update category
+        await updateCategory(editingCategory._id, updateData);
+
+        toast.success('Category updated successfully!');
+        
+        // Close modal and refresh list
+        handleCloseModal();
+        await refetch(true);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || err?.message || 'Failed to update category');
+      } finally {
+        setUploading(false);
+      }
+    } else {
+      // Add mode
+      if (!selectedImage) {
+        toast.error('Please select an image');
+        return;
       }
 
-      const imageUrl = uploadResponse.data.imageUrl;
+      try {
+        setUploading(true);
 
-      // Step 2: Calculate order (count of existing categories)
-      const categories = categoriesData || [];
-      const order = categories.length;
+        // Step 1: Upload image
+        const uploadResponse = await uploadCategoryImage(selectedImage);
+        
+        if (!uploadResponse.success || !uploadResponse.data?.imageUrl) {
+          throw new Error(uploadResponse.message || 'Failed to upload image');
+        }
 
-      // Step 3: Add category
-      await addCategory({
-        name: categoryName.trim(),
-        image: imageUrl,
-        order: order,
-      });
+        const imageUrl = uploadResponse.data.imageUrl;
 
-      toast.success('Category added successfully!');
-      
-      // Close modal and refresh list
-      handleCloseModal();
-      await refetch(true);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || 'Failed to add category');
-    } finally {
-      setUploading(false);
+        // Step 2: Calculate order (count of existing categories)
+        const categories = categoriesData || [];
+        const order = categories.length;
+
+        // Step 3: Add category
+        await addCategory({
+          name: categoryName.trim(),
+          image: imageUrl,
+          order: order,
+        });
+
+        toast.success('Category added successfully!');
+        
+        // Close modal and refresh list
+        handleCloseModal();
+        await refetch(true);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || err?.message || 'Failed to add category');
+      } finally {
+        setUploading(false);
+      }
     }
-  };
-
-  const handleEditCategory = () => {
-    // Functionality to be implemented later
-    // category parameter will be used when edit functionality is implemented
-    toast.info('Edit category functionality will be implemented soon');
   };
 
   if (loading && !categoriesData) {
@@ -245,7 +300,7 @@ const Categories = () => {
                 <div className="category-actions">
                   <button
                     className="edit-button"
-                    onClick={() => handleEditCategory()}
+                    onClick={() => handleEditCategory(category)}
                     title="Edit Category"
                   >
                     <FaEdit size={14} />
@@ -263,7 +318,7 @@ const Categories = () => {
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content add-category-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Add Category</h3>
+              <h3>{editingCategory ? 'Edit Category' : 'Add Category'}</h3>
               <button className="modal-close-btn" onClick={handleCloseModal}>
                 <X size={20} />
               </button>
@@ -287,7 +342,7 @@ const Categories = () => {
 
                 <div className="form-group">
                   <label htmlFor="category-image" className="form-label">
-                    Category Image <span className="required">*</span>
+                    Category Image {!editingCategory && <span className="required">*</span>}
                   </label>
                   <input
                     id="category-image"
@@ -309,6 +364,35 @@ const Categories = () => {
                   )}
                 </div>
 
+                <div className="form-group">
+                  <label htmlFor="category-order" className="form-label">
+                    Order
+                  </label>
+                  <input
+                    id="category-order"
+                    type="number"
+                    className="form-input"
+                    placeholder="Enter order"
+                    value={categoryOrder}
+                    onChange={(e) => setCategoryOrder(parseInt(e.target.value) || 0)}
+                    disabled={uploading}
+                    min="0"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={(e) => setIsActive(e.target.checked)}
+                      disabled={uploading}
+                      className="form-checkbox"
+                    />
+                    <span>Active</span>
+                  </label>
+                </div>
+
                 <div className="modal-actions">
                   <button
                     className="modal-action-btn modal-action-btn-cancel"
@@ -320,9 +404,9 @@ const Categories = () => {
                   <button
                     className="modal-action-btn modal-action-btn-confirm"
                     onClick={handleConfirmAdd}
-                    disabled={uploading || !categoryName.trim() || !selectedImage}
+                    disabled={uploading || !categoryName.trim() || (!editingCategory && !selectedImage)}
                   >
-                    {uploading ? 'Adding...' : 'Confirm'}
+                    {uploading ? (editingCategory ? 'Updating...' : 'Adding...') : 'Confirm'}
                   </button>
                 </div>
               </div>

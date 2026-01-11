@@ -50,3 +50,19 @@ export const addCategory = async (categoryData) => {
   return response.data;
 };
 
+/**
+ * Update category
+ * @param {string} categoryId - Category ID (_id)
+ * @param {Object} categoryData - Category data (all fields optional)
+ * @param {string} [categoryData.name] - Category name
+ * @param {string} [categoryData.image] - Image URL
+ * @param {number} [categoryData.order] - Category order
+ * @param {boolean} [categoryData.isActive] - Category active status
+ * @returns {Promise} API response
+ */
+export const updateCategory = async (categoryId, categoryData) => {
+  const response = await apiClient.put(`/api/admin/categories/${categoryId}`, categoryData);
+  
+  return response.data;
+};
+
