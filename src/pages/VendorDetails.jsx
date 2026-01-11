@@ -5,7 +5,7 @@ import { FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import Loading from '../components/common/Loading';
-import { getVendorDetailsByUserId, approveVendorProduction, rejectVendorImages, rejectVendorDocument, rejectVendorServices, rejectVendorBankDetails } from '../api/vendors';
+import { getVendorDetailsByUserId, approveVendorProduction, rejectVendorImages, rejectVendorDocument, rejectVendorServices, rejectVendorBankDetails, updateVendorLocation } from '../api/vendors';
 import { ROUTES } from '../utils/constants';
 import { useCachedApi } from '../hooks/useCachedApi';
 import { CACHE_KEYS } from '../utils/cache';
@@ -23,6 +23,7 @@ const VendorDetails = () => {
   const [rejectingBankDetails, setRejectingBankDetails] = useState(false);
   const [showUpdateLocationModal, setShowUpdateLocationModal] = useState(false);
   const [pastedCoordinates, setPastedCoordinates] = useState(null);
+  const [updatingLocation, setUpdatingLocation] = useState(false);
 
   // Create API function wrapper
   const fetchVendorDetails = React.useCallback(async () => {
@@ -353,9 +354,28 @@ const VendorDetails = () => {
     return { latitude, longitude };
   };
 
-  const handleUpdateLocation = () => {
-    // Functionality to be implemented later
-    toast.info('Update location functionality will be implemented soon');
+  const handleUpdateLocation = async () => {
+    if (!pastedCoordinates || !id) {
+      toast.error('Invalid coordinates or vendor ID');
+      return;
+    }
+
+    try {
+      setUpdatingLocation(true);
+      await updateVendorLocation(id, pastedCoordinates.latitude, pastedCoordinates.longitude);
+      
+      toast.success('Location updated successfully!');
+      
+      // Refresh vendor details
+      await refetch(true);
+      
+      // Close modal
+      handleCloseUpdateLocationModal();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update location');
+    } finally {
+      setUpdatingLocation(false);
+    }
   };
 
   if (loading) {
@@ -1000,8 +1020,9 @@ const VendorDetails = () => {
                     <button
                       className="modal-action-btn modal-action-btn-update"
                       onClick={handleUpdateLocation}
+                      disabled={updatingLocation}
                     >
-                      Update
+                      {updatingLocation ? 'Updating...' : 'Update'}
                     </button>
                   )}
                 </div>

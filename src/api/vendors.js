@@ -368,3 +368,20 @@ export const rejectService = async (serviceApprovalId) => {
   return response.data;
 };
 
+/**
+ * Update vendor location coordinates
+ * @param {string} userId - Vendor userId
+ * @param {number} latitude - Latitude coordinate
+ * @param {number} longitude - Longitude coordinate
+ * @returns {Promise} API response
+ */
+export const updateVendorLocation = async (userId, latitude, longitude) => {
+  const response = await apiClient.patch(`/api/vendor/${userId}`, {
+    userId,
+    latitude,
+    longitude,
+  });
+  
+  return response.data;
+};
+
