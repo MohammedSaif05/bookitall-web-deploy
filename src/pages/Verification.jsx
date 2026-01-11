@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Search, CheckCircle, XCircle, MapPin } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, XCircle, MapPin, Navigation } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { verifyIfsc } from '../api/verification';
 import './Verification.css';
@@ -12,6 +12,8 @@ const Verification = () => {
   const [ifscResult, setIfscResult] = useState(null);
   const [ifscError, setIfscError] = useState(null);
   const [location, setLocation] = useState('adhiyamaan college of en');
+  const [googleMapsLink, setGoogleMapsLink] = useState('');
+  const [coordinates, setCoordinates] = useState(null);
 
   const handleIfscVerify = async () => {
     if (!ifscCode.trim()) {
@@ -66,6 +68,46 @@ const Verification = () => {
     } catch (error) {
       toast.error(error?.message || 'Failed to verify account number');
       setVerifyingAccount(false);
+    }
+  };
+
+  const handleGetCoordinates = () => {
+    if (!googleMapsLink.trim()) {
+      toast.error('Please enter a Google Maps link');
+      return;
+    }
+
+    try {
+      const url = new URL(googleMapsLink);
+      const llParam = url.searchParams.get('ll');
+      
+      if (!llParam) {
+        toast.error('No coordinates found in the link. Please check the URL format.');
+        setCoordinates(null);
+        return;
+      }
+
+      const [latitude, longitude] = llParam.split(',');
+      
+      if (!latitude || !longitude || isNaN(parseFloat(latitude)) || isNaN(parseFloat(longitude))) {
+        toast.error('Invalid coordinates format in the link.');
+        setCoordinates(null);
+        return;
+      }
+
+      setCoordinates({
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+      });
+      
+      toast.success('Coordinates extracted successfully');
+    } catch (error) {
+      if (error instanceof TypeError) {
+        toast.error('Invalid URL format. Please enter a valid Google Maps link.');
+      } else {
+        toast.error('Failed to parse coordinates from the link');
+      }
+      setCoordinates(null);
     }
   };
 
@@ -241,6 +283,59 @@ const Verification = () => {
                 </div>
               </div>
             </div>
+
+            <div className="location-link-container">
+              <div className="verification-input-group">
+                <label htmlFor="maps-link-input" className="verification-label">
+                  Google Maps Link
+                </label>
+                <div className="verification-input-wrapper">
+                  <input
+                    id="maps-link-input"
+                    type="text"
+                    className="verification-input"
+                    placeholder="Enter Google Maps link to extract coordinates"
+                    value={googleMapsLink}
+                    onChange={(e) => {
+                      setGoogleMapsLink(e.target.value);
+                      setCoordinates(null);
+                    }}
+                  />
+                  <button
+                    className="verification-button"
+                    onClick={handleGetCoordinates}
+                    disabled={!googleMapsLink.trim()}
+                  >
+                    <Navigation size={16} />
+                    Get Coordinates
+                  </button>
+                </div>
+                <p className="verification-hint">
+                  Paste a Google Maps link to extract latitude and longitude coordinates
+                </p>
+              </div>
+
+              {/* Coordinates Result */}
+              {coordinates && (
+                <div className="verification-result">
+                  <div className="verification-result-header">
+                    <CheckCircle size={18} className="verification-success-icon" />
+                    <span className="verification-result-title">Coordinates Extracted</span>
+                  </div>
+                  <div className="verification-result-content">
+                    <div className="verification-result-row">
+                      <span className="verification-result-label">Latitude:</span>
+                      <span className="verification-result-value">{coordinates.latitude}</span>
+                    </div>
+                    <div className="verification-result-row">
+                      <span className="verification-result-label">Longitude:</span>
+                      <span className="verification-result-value">{coordinates.longitude}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="embed-map-fixed">
               <div className="embed-map-container">
                 <iframe

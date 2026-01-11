@@ -297,6 +297,16 @@
   flex-direction: row;
 }
 
+.location-link-container {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.location-link-container .verification-input-wrapper {
+  flex-direction: row;
+}
+
 .embed-map-fixed {
   position: relative;
   text-align: right;
@@ -361,6 +371,10 @@
   }
 
   .location-input-container .verification-input-wrapper {
+    flex-direction: column;
+  }
+
+  .location-link-container .verification-input-wrapper {
     flex-direction: column;
   }
 
