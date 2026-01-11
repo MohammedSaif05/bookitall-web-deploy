@@ -369,18 +369,40 @@ export const rejectService = async (serviceApprovalId) => {
 };
 
 /**
- * Update vendor location coordinates
+ * Update vendor location
  * @param {string} userId - Vendor userId
- * @param {number} latitude - Latitude coordinate
- * @param {number} longitude - Longitude coordinate
+ * @param {Object} locationData - Location data object
+ * @param {string} locationData.address - Address
+ * @param {string} locationData.landmark - Landmark
+ * @param {string} [locationData.googleMapLink] - Google Map Link (optional)
+ * @param {string} locationData.city - City
+ * @param {string} locationData.pincode - Pincode
+ * @param {number} [locationData.latitude] - Latitude (optional)
+ * @param {number} [locationData.longitude] - Longitude (optional)
  * @returns {Promise} API response
  */
-export const updateVendorLocation = async (userId, latitude, longitude) => {
-  const response = await apiClient.patch(`/api/vendor/${userId}`, {
+export const updateVendorLocation = async (userId, locationData) => {
+  const payload = {
     userId,
-    latitude,
-    longitude,
-  });
+    step: 2,
+    address: locationData.address,
+    landmark: locationData.landmark,
+    city: locationData.city,
+    pincode: locationData.pincode,
+  };
+
+  // Add optional fields if they exist
+  if (locationData.googleMapLink) {
+    payload.googleMapLink = locationData.googleMapLink;
+  }
+  if (locationData.latitude !== undefined && locationData.latitude !== null) {
+    payload.latitude = locationData.latitude;
+  }
+  if (locationData.longitude !== undefined && locationData.longitude !== null) {
+    payload.longitude = locationData.longitude;
+  }
+
+  const response = await apiClient.patch(`/api/vendor/${userId}`, payload);
   
   return response.data;
 };

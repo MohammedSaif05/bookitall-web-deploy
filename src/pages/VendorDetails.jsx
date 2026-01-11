@@ -355,14 +355,35 @@ const VendorDetails = () => {
   };
 
   const handleUpdateLocation = async () => {
-    if (!pastedCoordinates || !id) {
+    if (!pastedCoordinates || !id || !vendor) {
       toast.error('Invalid coordinates or vendor ID');
+      return;
+    }
+
+    // Validate required fields
+    if (!vendor.address || !vendor.landmark || !vendor.city || !vendor.pincode) {
+      toast.error('Missing required location fields');
       return;
     }
 
     try {
       setUpdatingLocation(true);
-      await updateVendorLocation(id, pastedCoordinates.latitude, pastedCoordinates.longitude);
+      
+      const locationData = {
+        address: vendor.address,
+        landmark: vendor.landmark,
+        city: vendor.city,
+        pincode: vendor.pincode,
+        latitude: pastedCoordinates.latitude,
+        longitude: pastedCoordinates.longitude,
+      };
+
+      // Add optional googleMapLink if it exists
+      if (vendor.googleMapLink) {
+        locationData.googleMapLink = vendor.googleMapLink;
+      }
+
+      await updateVendorLocation(id, locationData);
       
       toast.success('Location updated successfully!');
       
