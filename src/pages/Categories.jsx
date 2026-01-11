@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { FaSync, FaEdit } from 'react-icons/fa';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import Loading from '../components/common/Loading';
 import { useCachedApi } from '../hooks/useCachedApi';
-import { getCategories } from '../api/categories';
+import { getCategories, uploadCategoryImage, addCategory } from '../api/categories';
 import { CACHE_KEYS } from '../utils/cache';
 import { formatDate } from '../utils/helpers';
 import './Categories.css';
 
 const Categories = () => {
   const [refreshing, setRefreshing] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const { data: categoriesData, loading, error, refetch } = useCachedApi(
     getCategories,
@@ -37,8 +43,93 @@ const Categories = () => {
   };
 
   const handleAddCategory = () => {
-    // Functionality to be implemented later
-    toast.info('Add category functionality will be implemented soon');
+    setShowAddModal(true);
+    setCategoryName('');
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setCategoryName('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file');
+        return;
+      }
+      
+      // Validate file size (e.g., max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleConfirmAdd = async () => {
+    // Validate inputs
+    if (!categoryName.trim()) {
+      toast.error('Please enter a category name');
+      return;
+    }
+
+    if (!selectedImage) {
+      toast.error('Please select an image');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      // Step 1: Upload image
+      const uploadResponse = await uploadCategoryImage(selectedImage);
+      
+      if (!uploadResponse.success || !uploadResponse.data?.imageUrl) {
+        throw new Error(uploadResponse.message || 'Failed to upload image');
+      }
+
+      const imageUrl = uploadResponse.data.imageUrl;
+
+      // Step 2: Calculate order (count of existing categories)
+      const categories = categoriesData || [];
+      const order = categories.length;
+
+      // Step 3: Add category
+      await addCategory({
+        name: categoryName.trim(),
+        image: imageUrl,
+        order: order,
+      });
+
+      toast.success('Category added successfully!');
+      
+      // Close modal and refresh list
+      handleCloseModal();
+      await refetch(true);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to add category');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleEditCategory = () => {
@@ -164,6 +255,79 @@ const Categories = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Add Category Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content add-category-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Add Category</h3>
+              <button className="modal-close-btn" onClick={handleCloseModal}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="add-category-form">
+                <div className="form-group">
+                  <label htmlFor="category-name" className="form-label">
+                    Category Name <span className="required">*</span>
+                  </label>
+                  <input
+                    id="category-name"
+                    type="text"
+                    className="form-input"
+                    placeholder="Enter category name"
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    disabled={uploading}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="category-image" className="form-label">
+                    Category Image <span className="required">*</span>
+                  </label>
+                  <input
+                    id="category-image"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="form-file-input"
+                    onChange={handleImageChange}
+                    disabled={uploading}
+                  />
+                  {imagePreview && (
+                    <div className="image-preview-container">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="image-preview"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="modal-actions">
+                  <button
+                    className="modal-action-btn modal-action-btn-cancel"
+                    onClick={handleCloseModal}
+                    disabled={uploading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="modal-action-btn modal-action-btn-confirm"
+                    onClick={handleConfirmAdd}
+                    disabled={uploading || !categoryName.trim() || !selectedImage}
+                  >
+                    {uploading ? 'Adding...' : 'Confirm'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

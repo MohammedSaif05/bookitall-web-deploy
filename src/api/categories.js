@@ -18,3 +18,35 @@ export const getCategories = async () => {
   return { data: [] };
 };
 
+/**
+ * Upload category image
+ * @param {File} imageFile - Image file to upload
+ * @returns {Promise} Upload response with imageUrl
+ */
+export const uploadCategoryImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append('image', imageFile);
+  
+  const response = await apiClient.post('/api/admin/categories/upload-category-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  
+  return response.data;
+};
+
+/**
+ * Add category
+ * @param {Object} categoryData - Category data
+ * @param {string} categoryData.name - Category name
+ * @param {string} categoryData.image - Image URL
+ * @param {number} categoryData.order - Category order
+ * @returns {Promise} API response
+ */
+export const addCategory = async (categoryData) => {
+  const response = await apiClient.post('/api/admin/categories/add-prod-category', categoryData);
+  
+  return response.data;
+};
+
