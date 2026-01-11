@@ -384,7 +384,7 @@ export const rejectService = async (serviceApprovalId) => {
 export const updateVendorLocation = async (userId, locationData) => {
   const payload = {
     userId,
-    step: 2,
+    step: 4,
     address: locationData.address,
     landmark: locationData.landmark,
     city: locationData.city,
