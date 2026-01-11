@@ -64,5 +64,6 @@ export const CACHE_KEYS = {
   VENDOR_DETAILS: (userId) => `vendor_details_${userId}`,
   VERIFIED_VENDOR_DETAILS: (userId) => `verified_vendor_details_${userId}`,
   SERVICE_APPROVALS_LIST: 'service_approvals_list',
+  CATEGORIES_LIST: 'categories_list',
 };
 

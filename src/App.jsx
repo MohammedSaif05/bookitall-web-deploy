@@ -67,6 +67,14 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path={ROUTES.CATEGORIES}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );
