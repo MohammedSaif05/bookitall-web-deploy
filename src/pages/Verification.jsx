@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Search, CheckCircle, XCircle } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, XCircle, MapPin } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { verifyIfsc } from '../api/verification';
 import './Verification.css';
@@ -11,6 +11,7 @@ const Verification = () => {
   const [verifyingAccount, setVerifyingAccount] = useState(false);
   const [ifscResult, setIfscResult] = useState(null);
   const [ifscError, setIfscError] = useState(null);
+  const [location, setLocation] = useState('adhiyamaan college of en');
 
   const handleIfscVerify = async () => {
     if (!ifscCode.trim()) {
@@ -205,6 +206,52 @@ const Verification = () => {
                 <p className="verification-hint">
                   Enter account number to verify bank account details
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Verification Section */}
+        <div className="location-verification-section">
+          <div className="verification-header">
+            <h2 className="verification-title">
+              <MapPin size={24} />
+              Location Verification
+            </h2>
+            <p className="verification-description">
+              View and verify location on Google Maps.
+            </p>
+          </div>
+
+          <div className="verification-card location-verification-card">
+            <div className="location-input-container">
+              <div className="verification-input-group">
+                <label htmlFor="location-input" className="verification-label">
+                  Enter Location
+                </label>
+                <div className="verification-input-wrapper">
+                  <input
+                    id="location-input"
+                    type="text"
+                    className="verification-input"
+                    placeholder="Enter location to verify"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="embed-map-fixed">
+              <div className="embed-map-container">
+                <iframe
+                  className="embed-map-frame"
+                  frameBorder="0"
+                  scrolling="no"
+                  marginHeight="0"
+                  marginWidth="0"
+                  src={`https://maps.google.com/maps?width=600&height=400&hl=en&q=${encodeURIComponent(location || 'adhiyamaan college of en')}&t=&z=15&ie=UTF8&iwloc=B&output=embed`}
+                  title="Location Verification Map"
+                />
               </div>
             </div>
           </div>
