@@ -344,7 +344,7 @@ const Verification = () => {
                   scrolling="no"
                   marginHeight="0"
                   marginWidth="0"
-                  src={`https://maps.google.com/maps?width=600&height=400&hl=en&q=${encodeURIComponent(location || 'adhiyamaan college of en')}&t=&z=15&ie=UTF8&iwloc=B&output=embed`}
+                  src={`https://maps.google.com/maps?width=600&height=400&hl=en&q=${encodeURIComponent(location)}&t=&z=15&ie=UTF8&iwloc=B&output=embed`}
                   title="Location Verification Map"
                 />
               </div>
