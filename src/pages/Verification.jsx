@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Search, CheckCircle, XCircle, MapPin, Navigation } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, XCircle, MapPin, Navigation, Copy } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { verifyIfsc } from '../api/verification';
 import './Verification.css';
@@ -108,6 +108,26 @@ const Verification = () => {
         toast.error('Failed to parse coordinates from the link');
       }
       setCoordinates(null);
+    }
+  };
+
+  const handleCopyCoordinates = async () => {
+    if (!coordinates) {
+      toast.error('No coordinates to copy');
+      return;
+    }
+
+    try {
+      const coordinatesText = `${coordinates.latitude},${coordinates.longitude}`;
+      await navigator.clipboard.writeText(coordinatesText);
+      // Also store in localStorage as backup
+      localStorage.setItem('copiedCoordinates', coordinatesText);
+      toast.success('Coordinates copied to clipboard!');
+    } catch {
+      // Fallback: try storing in localStorage and showing in a toast
+      const coordinatesText = `${coordinates.latitude},${coordinates.longitude}`;
+      localStorage.setItem('copiedCoordinates', coordinatesText);
+      toast.success('Coordinates saved!');
     }
   };
 
@@ -330,6 +350,16 @@ const Verification = () => {
                     <div className="verification-result-row">
                       <span className="verification-result-label">Longitude:</span>
                       <span className="verification-result-value">{coordinates.longitude}</span>
+                    </div>
+                    <div className="coordinates-copy-container">
+                      <button
+                        className="copy-coordinates-button"
+                        onClick={handleCopyCoordinates}
+                        title="Copy coordinates"
+                      >
+                        <Copy size={16} />
+                        Copy Coordinates
+                      </button>
                     </div>
                   </div>
                 </div>

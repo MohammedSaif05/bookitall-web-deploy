@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, MapPin, Phone, Mail, User, Clock, Calendar, Image as ImageIcon, FileText, Scissors, CreditCard } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Phone, Mail, User, Clock, Calendar, Image as ImageIcon, FileText, Scissors, CreditCard, X, Clipboard } from 'lucide-react';
 import { FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -21,6 +21,8 @@ const VendorDetails = () => {
   const [rejectingDocument, setRejectingDocument] = useState(false);
   const [rejectingServices, setRejectingServices] = useState(false);
   const [rejectingBankDetails, setRejectingBankDetails] = useState(false);
+  const [showUpdateLocationModal, setShowUpdateLocationModal] = useState(false);
+  const [pastedCoordinates, setPastedCoordinates] = useState(null);
 
   // Create API function wrapper
   const fetchVendorDetails = React.useCallback(async () => {
@@ -281,6 +283,81 @@ const VendorDetails = () => {
     }
   };
 
+  const handleOpenUpdateLocationModal = () => {
+    setShowUpdateLocationModal(true);
+    setPastedCoordinates(null);
+  };
+
+  const handleCloseUpdateLocationModal = () => {
+    setShowUpdateLocationModal(false);
+    setPastedCoordinates(null);
+  };
+
+  const handlePasteCoordinates = async () => {
+    try {
+      // Try to read from clipboard first
+      const clipboardText = await navigator.clipboard.readText();
+      const coordinates = parseCoordinates(clipboardText);
+      if (coordinates) {
+        setPastedCoordinates(coordinates);
+        toast.success('Coordinates pasted successfully!');
+      } else {
+        // Try localStorage as fallback
+        const storedCoordinates = localStorage.getItem('copiedCoordinates');
+        if (storedCoordinates) {
+          const coordinates = parseCoordinates(storedCoordinates);
+          if (coordinates) {
+            setPastedCoordinates(coordinates);
+            toast.success('Coordinates pasted from saved data!');
+          } else {
+            toast.error('Invalid coordinates format. Expected format: latitude,longitude');
+          }
+        } else {
+          toast.error('No coordinates found in clipboard or saved data');
+        }
+      }
+    } catch {
+      // Fallback to localStorage
+      try {
+        const storedCoordinates = localStorage.getItem('copiedCoordinates');
+        if (storedCoordinates) {
+          const coordinates = parseCoordinates(storedCoordinates);
+          if (coordinates) {
+            setPastedCoordinates(coordinates);
+            toast.success('Coordinates pasted from saved data!');
+          } else {
+            toast.error('Invalid coordinates format. Expected format: latitude,longitude');
+          }
+        } else {
+          toast.error('Unable to read clipboard. Please ensure coordinates are copied first.');
+        }
+      } catch {
+        toast.error('Unable to read clipboard. Please ensure coordinates are copied first.');
+      }
+    }
+  };
+
+  const parseCoordinates = (text) => {
+    if (!text || typeof text !== 'string') return null;
+    
+    const trimmed = text.trim();
+    const parts = trimmed.split(',');
+    
+    if (parts.length !== 2) return null;
+    
+    const latitude = parseFloat(parts[0].trim());
+    const longitude = parseFloat(parts[1].trim());
+    
+    if (isNaN(latitude) || isNaN(longitude)) return null;
+    
+    return { latitude, longitude };
+  };
+
+  const handleUpdateLocation = () => {
+    // Functionality to be implemented later
+    toast.info('Update location functionality will be implemented soon');
+  };
+
   if (loading) {
     return (
       <div className="vendor-details-page">
@@ -438,6 +515,15 @@ const VendorDetails = () => {
                   <p>{vendor.latitude}, {vendor.longitude}</p>
                 </div>
               )}
+            </div>
+            <div className="section-actions">
+              <button
+                className="update-location-button"
+                onClick={handleOpenUpdateLocationModal}
+                title="Update location coordinates"
+              >
+                Update Location
+              </button>
             </div>
           </section>
 
@@ -862,6 +948,68 @@ const VendorDetails = () => {
           </section>
         </div>
       </div>
+
+      {/* Update Location Modal */}
+      {showUpdateLocationModal && (
+        <div className="modal-overlay" onClick={handleCloseUpdateLocationModal}>
+          <div className="modal-content update-location-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Update Location</h3>
+              <button className="modal-close-btn" onClick={handleCloseUpdateLocationModal}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="update-location-content">
+                <div className="paste-coordinates-section">
+                  <button
+                    className="paste-coordinates-button"
+                    onClick={handlePasteCoordinates}
+                  >
+                    <Clipboard size={18} />
+                    Paste Coordinates
+                  </button>
+                </div>
+                
+                {pastedCoordinates && (
+                  <div className="pasted-coordinates-display">
+                    <div className="coordinates-display-header">
+                      <span className="coordinates-display-title">Pasted Coordinates</span>
+                    </div>
+                    <div className="coordinates-display-content">
+                      <div className="coordinate-item">
+                        <label>Latitude:</label>
+                        <span>{pastedCoordinates.latitude}</span>
+                      </div>
+                      <div className="coordinate-item">
+                        <label>Longitude:</label>
+                        <span>{pastedCoordinates.longitude}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="modal-actions update-location-actions">
+                  <button
+                    className="modal-action-btn modal-action-btn-cancel"
+                    onClick={handleCloseUpdateLocationModal}
+                  >
+                    Cancel
+                  </button>
+                  {pastedCoordinates && (
+                    <button
+                      className="modal-action-btn modal-action-btn-update"
+                      onClick={handleUpdateLocation}
+                    >
+                      Update
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
