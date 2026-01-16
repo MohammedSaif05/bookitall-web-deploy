@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, startTransition } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { LayoutDashboard, Store, LogOut, ShieldCheck, CheckSquare, Tags, Gift } from 'lucide-react';
@@ -34,20 +34,65 @@ const Dashboard = () => {
   const promotionDropdownMenuRef = useRef(null);
   const [vendorDropdownTop, setVendorDropdownTop] = useState(0);
   const [promotionDropdownTop, setPromotionDropdownTop] = useState(0);
+  const prevVendorPageRef = useRef(vendorPage);
+  const prevPromotionPageRef = useRef(promotionPage);
+  const prevIsOpenRef = useRef(isOpen);
+  const vendorManuallyToggledRef = useRef(false);
+  const promotionManuallyToggledRef = useRef(false);
 
-  // Sync dropdown state with page navigation and sidebar state
-  // Using useLayoutEffect to sync state before paint to avoid flicker
-  React.useLayoutEffect(() => {
-    const shouldVendorBeOpen = isOpen && vendorPage;
-    const shouldPromotionBeOpen = isOpen && promotionPage;
+  // Sync dropdown state when route changes (only on route change, not on every render)
+  useEffect(() => {
+    const vendorPageChanged = prevVendorPageRef.current !== vendorPage;
+    const promotionPageChanged = prevPromotionPageRef.current !== promotionPage;
     
-    if (vendorDropdownOpen !== shouldVendorBeOpen) {
-      setVendorDropdownOpen(shouldVendorBeOpen);
+    if (vendorPageChanged || promotionPageChanged) {
+      startTransition(() => {
+        if (vendorPageChanged) {
+          setVendorDropdownOpen(vendorPage);
+          prevVendorPageRef.current = vendorPage;
+          vendorManuallyToggledRef.current = false;
+        }
+        if (promotionPageChanged) {
+          setPromotionDropdownOpen(promotionPage);
+          prevPromotionPageRef.current = promotionPage;
+          promotionManuallyToggledRef.current = false;
+        }
+      });
     }
-    if (promotionDropdownOpen !== shouldPromotionBeOpen) {
-      setPromotionDropdownOpen(shouldPromotionBeOpen);
+  }, [vendorPage, promotionPage]);
+
+  // Close dropdowns when sidebar collapses
+  useEffect(() => {
+    const isOpenChanged = prevIsOpenRef.current !== isOpen;
+    
+    if (isOpenChanged) {
+      startTransition(() => {
+        if (!isOpen) {
+          setVendorDropdownOpen(false);
+          setPromotionDropdownOpen(false);
+        } else {
+          // When sidebar opens, sync with current route
+          setVendorDropdownOpen(vendorPage);
+          setPromotionDropdownOpen(promotionPage);
+        }
+        prevIsOpenRef.current = isOpen;
+        vendorManuallyToggledRef.current = false;
+        promotionManuallyToggledRef.current = false;
+      });
     }
-  }, [isOpen, vendorPage, promotionPage, vendorDropdownOpen, promotionDropdownOpen]);
+  }, [isOpen, vendorPage, promotionPage]);
+
+  // Handler for vendor dropdown toggle
+  const handleVendorDropdownToggle = () => {
+    vendorManuallyToggledRef.current = true;
+    setVendorDropdownOpen(!vendorDropdownOpen);
+  };
+
+  // Handler for promotion dropdown toggle
+  const handlePromotionDropdownToggle = () => {
+    promotionManuallyToggledRef.current = true;
+    setPromotionDropdownOpen(!promotionDropdownOpen);
+  };
 
   useEffect(() => {
     if (vendorButtonRef.current && !isOpen && vendorDropdownOpen) {
@@ -209,7 +254,7 @@ const Dashboard = () => {
             <button
               ref={promotionButtonRef}
               className={`sidebar-item sidebar-item-dropdown ${promotionPage ? 'active' : ''}`}
-              onClick={() => setPromotionDropdownOpen(!promotionDropdownOpen)}
+              onClick={handlePromotionDropdownToggle}
               title={!isOpen ? 'Promotions' : ''}
             >
               <Gift className="sidebar-icon" size={20} />
@@ -259,7 +304,7 @@ const Dashboard = () => {
             <button
               ref={vendorButtonRef}
               className={`sidebar-item sidebar-item-dropdown ${vendorPage ? 'active' : ''}`}
-              onClick={() => setVendorDropdownOpen(!vendorDropdownOpen)}
+              onClick={handleVendorDropdownToggle}
               title={!isOpen ? 'Vendor' : ''}
             >
               <Store className="sidebar-icon" size={20} />
