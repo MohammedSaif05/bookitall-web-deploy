@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { LayoutDashboard, Store, LogOut, ShieldCheck, CheckSquare, Tags } from 'lucide-react';
-import { FaUserCheck, FaClock, FaChevronDown, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
+import { LayoutDashboard, Store, LogOut, ShieldCheck, CheckSquare, Tags, Gift } from 'lucide-react';
+import { FaUserCheck, FaClock, FaChevronDown, FaChevronRight, FaChevronLeft, FaRocket, FaInbox } from 'react-icons/fa';
 import logoImg from './assets/logo.png';
 import sidebarLogo from './assets/sidebarlogo.png';
 import VerifiedVendors from './pages/VerifiedVendors';
@@ -12,9 +12,11 @@ import VerifiedVendorDetails from './pages/VerifiedVendorDetails';
 import Verification from './pages/Verification';
 import ServiceApprovals from './pages/ServiceApprovals';
 import Categories from './pages/Categories';
+import Production from './pages/Production';
+import PromotionRequests from './pages/PromotionRequests';
 import { useAuth } from './contexts/AuthContext';
 import { ROUTES } from './utils/constants';
-import { getPageTitle, isVendorPage } from './utils/helpers';
+import { getPageTitle, isVendorPage, isPromotionPage } from './utils/helpers';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -22,53 +24,73 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const vendorPage = isVendorPage(location.pathname);
-  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(vendorPage);
+  const promotionPage = isPromotionPage(location.pathname);
   const [isOpen, setIsOpen] = useState(true);
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(vendorPage);
+  const [promotionDropdownOpen, setPromotionDropdownOpen] = useState(promotionPage);
   const vendorButtonRef = useRef(null);
-  const dropdownMenuRef = useRef(null);
-  const [dropdownTop, setDropdownTop] = useState(0);
+  const promotionButtonRef = useRef(null);
+  const vendorDropdownMenuRef = useRef(null);
+  const promotionDropdownMenuRef = useRef(null);
+  const [vendorDropdownTop, setVendorDropdownTop] = useState(0);
+  const [promotionDropdownTop, setPromotionDropdownTop] = useState(0);
 
-  useEffect(() => {
-    setVendorDropdownOpen(vendorPage);
-  }, [vendorPage]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setVendorDropdownOpen(false);
-    } else {
-      setVendorDropdownOpen(vendorPage);
+  // Sync dropdown state with page navigation and sidebar state
+  // Using useLayoutEffect to sync state before paint to avoid flicker
+  React.useLayoutEffect(() => {
+    const shouldVendorBeOpen = isOpen && vendorPage;
+    const shouldPromotionBeOpen = isOpen && promotionPage;
+    
+    if (vendorDropdownOpen !== shouldVendorBeOpen) {
+      setVendorDropdownOpen(shouldVendorBeOpen);
     }
-  }, [isOpen, vendorPage]);
+    if (promotionDropdownOpen !== shouldPromotionBeOpen) {
+      setPromotionDropdownOpen(shouldPromotionBeOpen);
+    }
+  }, [isOpen, vendorPage, promotionPage, vendorDropdownOpen, promotionDropdownOpen]);
 
   useEffect(() => {
     if (vendorButtonRef.current && !isOpen && vendorDropdownOpen) {
       const rect = vendorButtonRef.current.getBoundingClientRect();
-      setDropdownTop(rect.top);
+      setVendorDropdownTop(rect.top);
     }
-  }, [vendorDropdownOpen, isOpen]);
+    if (promotionButtonRef.current && !isOpen && promotionDropdownOpen) {
+      const rect = promotionButtonRef.current.getBoundingClientRect();
+      setPromotionDropdownTop(rect.top);
+    }
+  }, [vendorDropdownOpen, promotionDropdownOpen, isOpen]);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         vendorDropdownOpen &&
         vendorButtonRef.current &&
-        dropdownMenuRef.current &&
+        vendorDropdownMenuRef.current &&
         !vendorButtonRef.current.contains(event.target) &&
-        !dropdownMenuRef.current.contains(event.target)
+        !vendorDropdownMenuRef.current.contains(event.target)
       ) {
         setVendorDropdownOpen(false);
       }
+      if (
+        promotionDropdownOpen &&
+        promotionButtonRef.current &&
+        promotionDropdownMenuRef.current &&
+        !promotionButtonRef.current.contains(event.target) &&
+        !promotionDropdownMenuRef.current.contains(event.target)
+      ) {
+        setPromotionDropdownOpen(false);
+      }
     };
 
-    if (vendorDropdownOpen) {
+    if (vendorDropdownOpen || promotionDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [vendorDropdownOpen]);
+  }, [vendorDropdownOpen, promotionDropdownOpen]);
 
   const handleLogout = () => {
     // Show success toast
@@ -106,6 +128,18 @@ const Dashboard = () => {
       return {
         title: 'Services Approvals',
         description: 'Review and approve service requests.',
+      };
+    }
+    if (location.pathname.includes('/promotions/production')) {
+      return {
+        title: 'Production Promotions',
+        description: 'View all active promotions.',
+      };
+    }
+    if (location.pathname.includes('/promotions/requests')) {
+      return {
+        title: 'Promotion Requests',
+        description: 'View and manage promotion requests.',
       };
     }
     return {
@@ -173,6 +207,56 @@ const Dashboard = () => {
           </button>
           <div className="sidebar-dropdown">
             <button
+              ref={promotionButtonRef}
+              className={`sidebar-item sidebar-item-dropdown ${promotionPage ? 'active' : ''}`}
+              onClick={() => setPromotionDropdownOpen(!promotionDropdownOpen)}
+              title={!isOpen ? 'Promotions' : ''}
+            >
+              <Gift className="sidebar-icon" size={20} />
+              {isOpen && (
+                <span className="sidebar-item-label">
+                  <span>Promotions</span>
+                  <span className="dropdown-arrow">
+                    {promotionDropdownOpen ? (
+                      <FaChevronDown size={12} />
+                    ) : (
+                      <FaChevronRight size={12} />
+                    )}
+                  </span>
+                </span>
+              )}
+            </button>
+            {promotionDropdownOpen && (
+              <div 
+                ref={promotionDropdownMenuRef}
+                className={`dropdown-menu ${!isOpen ? 'dropdown-menu-collapsed' : ''}`}
+                style={!isOpen ? { top: `${promotionDropdownTop}px` } : {}}
+              >
+                <button
+                  className={`dropdown-item ${location.pathname.includes('/promotions/production') ? 'active' : ''}`}
+                  onClick={() => {
+                    setPromotionDropdownOpen(false);
+                    navigate(ROUTES.PROMOTIONS_PRODUCTION);
+                  }}
+                >
+                  <FaRocket size={14} className="dropdown-icon" />
+                  <span>Production</span>
+                </button>
+                <button
+                  className={`dropdown-item ${location.pathname.includes('/promotions/requests') ? 'active' : ''}`}
+                  onClick={() => {
+                    setPromotionDropdownOpen(false);
+                    navigate(ROUTES.PROMOTIONS_REQUESTS);
+                  }}
+                >
+                  <FaInbox size={14} className="dropdown-icon" />
+                  <span>Requests</span>
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="sidebar-dropdown">
+            <button
               ref={vendorButtonRef}
               className={`sidebar-item sidebar-item-dropdown ${vendorPage ? 'active' : ''}`}
               onClick={() => setVendorDropdownOpen(!vendorDropdownOpen)}
@@ -194,9 +278,9 @@ const Dashboard = () => {
             </button>
             {vendorDropdownOpen && (
               <div 
-                ref={dropdownMenuRef}
+                ref={vendorDropdownMenuRef}
                 className={`dropdown-menu ${!isOpen ? 'dropdown-menu-collapsed' : ''}`}
-                style={!isOpen ? { top: `${dropdownTop}px` } : {}}
+                style={!isOpen ? { top: `${vendorDropdownTop}px` } : {}}
               >
                 <button
                   className={`dropdown-item ${location.pathname.includes('/onboarding') ? 'active' : ''}`}
@@ -252,6 +336,10 @@ const Dashboard = () => {
             <ServiceApprovals />
           ) : location.pathname.includes('/categories') ? (
             <Categories />
+          ) : location.pathname.includes('/promotions/production') ? (
+            <Production />
+          ) : location.pathname.includes('/promotions/requests') ? (
+            <PromotionRequests />
           ) : (
             <div className="dashboard-card">
               <h2>{content.title}</h2>

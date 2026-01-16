@@ -75,6 +75,22 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path={ROUTES.PROMOTIONS_PRODUCTION}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path={ROUTES.PROMOTIONS_REQUESTS}
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );

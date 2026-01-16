@@ -52,6 +52,8 @@ export const getPageTitle = (pathname) => {
   if (pathname.includes('/vendor/verified/')) return 'Verified Vendor Details';
   if (pathname.includes('/verification')) return 'Verification';
   if (pathname.includes('/services/approvals')) return 'Services Approvals';
+  if (pathname.includes('/promotions/production')) return 'Promotions';
+  if (pathname.includes('/promotions/requests')) return 'Promotions';
   return 'Dashboard';
 };
 
@@ -60,6 +62,13 @@ export const getPageTitle = (pathname) => {
  */
 export const isVendorPage = (pathname) => {
   return pathname.includes('/vendor');
+};
+
+/**
+ * Check if pathname matches promotion routes
+ */
+export const isPromotionPage = (pathname) => {
+  return pathname.includes('/promotions');
 };
 
 /**

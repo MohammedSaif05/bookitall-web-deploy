@@ -10,6 +10,8 @@ export const ROUTES = {
   VERIFICATION: '/dashboard/verification',
   SERVICE_APPROVALS: '/dashboard/services/approvals',
   CATEGORIES: '/dashboard/categories',
+  PROMOTIONS_PRODUCTION: '/dashboard/promotions/production',
+  PROMOTIONS_REQUESTS: '/dashboard/promotions/requests',
 };
 
 export const VENDOR_STATUS = {
