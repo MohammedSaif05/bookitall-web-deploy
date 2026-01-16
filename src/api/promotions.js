@@ -111,3 +111,43 @@ export const getPromotionAssets = async (requestId, vendorId) => {
   return { data: [] };
 };
 
+/**
+ * Create global promotion
+ * @param {Object} promotionData - Promotion data (category, description, promotionImage)
+ * @returns {Promise} Creation response
+ */
+export const createGlobalPromotion = async (promotionData) => {
+  const formData = new FormData();
+  formData.append('category', promotionData.category);
+  formData.append('description', promotionData.description);
+  
+  if (promotionData.promotionImage) {
+    formData.append('promotionImage', promotionData.promotionImage);
+  }
+  
+  const response = await apiClient.post(
+    '/api/admin/promotions/global-promote',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  
+  return response.data;
+};
+
+/**
+ * Delete global promotion
+ * @param {string} promotionId - Promotion ID
+ * @returns {Promise} Deletion response
+ */
+export const deleteGlobalPromotion = async (promotionId) => {
+  const response = await apiClient.delete(
+    `/api/admin/promotions/global-promote/${promotionId}`
+  );
+  
+  return response.data;
+};
+

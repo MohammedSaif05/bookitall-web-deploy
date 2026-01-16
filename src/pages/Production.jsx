@@ -1,8 +1,8 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { FaSync } from 'react-icons/fa';
+import { FaSync, FaPlus, FaTimes, FaTrash } from 'react-icons/fa';
 import { useCachedApi } from '../hooks/useCachedApi';
-import { getActivePromotions } from '../api/promotions';
+import { getActivePromotions, createGlobalPromotion, deleteGlobalPromotion } from '../api/promotions';
 import { CACHE_KEYS } from '../utils/cache';
 import { formatDate } from '../utils/helpers';
 import './Production.css';
@@ -13,6 +13,14 @@ const Production = () => {
     CACHE_KEYS.PROMOTIONS_PRODUCTION_LIST
   );
   const [refreshing, setRefreshing] = React.useState(false);
+  const [showAddModal, setShowAddModal] = React.useState(false);
+  const [category, setCategory] = React.useState('offer');
+  const [description, setDescription] = React.useState('');
+  const [promotionImage, setPromotionImage] = React.useState(null);
+  const [imagePreview, setImagePreview] = React.useState(null);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(null);
+  const fileInputRef = React.useRef(null);
 
   // Show error toast if API call fails
   React.useEffect(() => {
@@ -30,6 +38,110 @@ const Production = () => {
       toast.error('Failed to refresh promotions list');
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    setShowAddModal(true);
+    setCategory('offer');
+    setDescription('');
+    setPromotionImage(null);
+    setImagePreview(null);
+  };
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setCategory('offer');
+    setDescription('');
+    setPromotionImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file');
+        return;
+      }
+      setPromotionImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPromotionImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!category) {
+      toast.error('Please select a category');
+      return;
+    }
+    
+    if (!description.trim()) {
+      toast.error('Please enter a description');
+      return;
+    }
+    
+    if (!promotionImage) {
+      toast.error('Please select an image');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await createGlobalPromotion({
+        category,
+        description: description.trim(),
+        promotionImage,
+      });
+      toast.success('Global promotion created successfully');
+      
+      // Refresh data
+      await refetch(true);
+      
+      // Close modal and reset
+      handleCloseAddModal();
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to create promotion';
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (promotionId) => {
+    if (!promotionId) {
+      toast.error('Promotion ID not found');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this global promotion?')) {
+      return;
+    }
+
+    try {
+      setDeleting(promotionId);
+      await deleteGlobalPromotion(promotionId);
+      toast.success('Global promotion deleted successfully');
+      
+      // Refresh data
+      await refetch(true);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to delete promotion';
+      toast.error(errorMessage);
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -80,15 +192,25 @@ const Production = () => {
             <h2>Production Promotions</h2>
             <p>View all active promotions</p>
           </div>
-          <button
-            className="refresh-button"
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-            title="Refresh promotions list"
-          >
-            <FaSync className={refreshing ? 'spinning' : ''} size={16} />
-            <span>Refresh</span>
-          </button>
+          <div className="header-actions">
+            <button
+              className="add-promotion-button"
+              onClick={handleOpenAddModal}
+              title="Add new global promotion"
+            >
+              <FaPlus size={16} />
+              <span>Add Promotion</span>
+            </button>
+            <button
+              className="refresh-button"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              title="Refresh promotions list"
+            >
+              <FaSync className={refreshing ? 'spinning' : ''} size={16} />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -114,16 +236,23 @@ const Production = () => {
                     {promotion.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
+                {promotion.isGlobal && (
+                  <div className="global-badge">
+                    <span>Global</span>
+                  </div>
+                )}
               </div>
               <div className="promotion-content">
                 <div className="promotion-field">
                   <span className="field-label">Promotion ID:</span>
                   <span className="field-value">{promotion.promotionId}</span>
                 </div>
-                <div className="promotion-field">
-                  <span className="field-label">Vendor ID:</span>
-                  <span className="field-value">{promotion.vendorId}</span>
-                </div>
+                {promotion.vendorId && (
+                  <div className="promotion-field">
+                    <span className="field-label">Vendor ID:</span>
+                    <span className="field-value">{promotion.vendorId}</span>
+                  </div>
+                )}
                 <div className="promotion-field">
                   <span className="field-label">Category:</span>
                   <span className="field-value category-badge">{promotion.category || 'N/A'}</span>
@@ -140,9 +269,107 @@ const Production = () => {
                   <span className="field-label">End Date:</span>
                   <span className="field-value">{formatDate(promotion.endDate) || 'N/A'}</span>
                 </div>
+                {promotion.isGlobal && (
+                  <div className="promotion-actions">
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDelete(promotion.promotionId)}
+                      disabled={deleting === promotion.promotionId}
+                      title="Delete global promotion"
+                    >
+                      <FaTrash size={14} />
+                      <span>{deleting === promotion.promotionId ? 'Deleting...' : 'Delete'}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Add Promotion Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={handleCloseAddModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Add Global Promotion</h3>
+              <button className="modal-close-btn" onClick={handleCloseAddModal}>
+                <FaTimes size={18} />
+              </button>
+            </div>
+            <form className="modal-body" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="category">Category *</label>
+                <select
+                  id="category"
+                  className="form-select"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  <option value="offer">Offer</option>
+                  <option value="featured">Featured</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="description">Description *</label>
+                <textarea
+                  id="description"
+                  className="form-textarea"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Enter promotion description"
+                  rows={4}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="promotionImage">Promotion Image *</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  id="promotionImage"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="form-file-input"
+                  required
+                />
+                {imagePreview && (
+                  <div className="image-preview-container">
+                    <img src={imagePreview} alt="Preview" className="image-preview-img" />
+                    <button
+                      type="button"
+                      className="remove-preview-btn"
+                      onClick={handleRemoveImage}
+                    >
+                      <FaTimes size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="modal-cancel-btn"
+                  onClick={handleCloseAddModal}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-submit-btn"
+                  disabled={submitting || !category || !description.trim() || !promotionImage}
+                >
+                  {submitting ? 'Creating...' : 'Create Promotion'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
@@ -150,4 +377,3 @@ const Production = () => {
 };
 
 export default Production;
-
